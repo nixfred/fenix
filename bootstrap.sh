@@ -8,7 +8,18 @@
 #   curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 #   curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
 
-set -e
+set -euo pipefail
+
+# Input validation function
+validate_input() {
+    local input="$1"
+    # Allow only alphanumeric, dash, underscore, and dot
+    if [[ ! "$input" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+        echo "Error: Invalid input contains unsafe characters: $input" >&2
+        return 1
+    fi
+    return 0
+}
 
 # Parse command line arguments
 SKIP_SSH=false
@@ -108,7 +119,7 @@ detect_machine_type() {
     
     echo -e "${YELLOW}🤖 Machine Identity Detection${RESET}"
     echo "================================"
-    echo "Current hostname: $current_hostname"
+    echo "Current hostname: ${current_hostname}"
     echo ""
     echo "Machine Types:"
     echo "1) Remote Environment (pi5-style) - Synchronized work environment"
@@ -123,11 +134,11 @@ detect_machine_type() {
         machine_type=3  # Auto-detect for non-interactive (piped) input
     fi
     
-    case $machine_type in
+    case "${machine_type:-}" in
         1)
             MACHINE_ROLE="remote"
             echo -e "${CYAN}📍 Configuring as REMOTE ENVIRONMENT${RESET}"
-            echo "   • Will keep current hostname: $current_hostname"
+            echo "   • Will keep current hostname: ${current_hostname}"
             echo "   • Synchronized configs but separate identity"
             echo "   • Will connect back to main workstation"
             ;;
@@ -140,25 +151,25 @@ detect_machine_type() {
             ;;
         3|"")
             # Relaxed auto-detection: check for common main workstation indicators
-            if [[ "$current_hostname" == "ron" ]] || [[ "$current_hostname" == *"main"* ]] || [[ "$current_hostname" == *"workstation"* ]]; then
+            if [[ "${current_hostname}" == "ron" ]] || [[ "${current_hostname}" == *"main"* ]] || [[ "${current_hostname}" == *"workstation"* ]]; then
                 MACHINE_ROLE="main"
-                echo -e "${GREEN}📍 AUTO-DETECTED: MAIN WORKSTATION ($current_hostname)${RESET}"
+                echo -e "${GREEN}📍 AUTO-DETECTED: MAIN WORKSTATION (${current_hostname})${RESET}"
                 echo "   • Detected as main workstation based on hostname pattern"
             else
                 MACHINE_ROLE="remote"
-                echo -e "${CYAN}📍 AUTO-DETECTED: REMOTE ENVIRONMENT ($current_hostname)${RESET}"
+                echo -e "${CYAN}📍 AUTO-DETECTED: REMOTE ENVIRONMENT (${current_hostname})${RESET}"
                 echo "   • Will keep current hostname and configure as remote environment"
             fi
             ;;
         *)
-            echo -e "${YELLOW}⚠️  Unknown input '$machine_type'. Using auto-detection.${RESET}"
+            echo -e "${YELLOW}⚠️  Unknown input '${machine_type}'. Using auto-detection.${RESET}"
             # Fall back to auto-detection logic
-            if [[ "$current_hostname" == "ron" ]] || [[ "$current_hostname" == *"main"* ]] || [[ "$current_hostname" == *"workstation"* ]]; then
+            if [[ "${current_hostname}" == "ron" ]] || [[ "${current_hostname}" == *"main"* ]] || [[ "${current_hostname}" == *"workstation"* ]]; then
                 MACHINE_ROLE="main"
-                echo -e "${GREEN}📍 DEFAULTED: MAIN WORKSTATION ($current_hostname)${RESET}"
+                echo -e "${GREEN}📍 DEFAULTED: MAIN WORKSTATION (${current_hostname})${RESET}"
             else
                 MACHINE_ROLE="remote"
-                echo -e "${CYAN}📍 DEFAULTED: REMOTE ENVIRONMENT ($current_hostname)${RESET}"
+                echo -e "${CYAN}📍 DEFAULTED: REMOTE ENVIRONMENT (${current_hostname})${RESET}"
             fi
             ;;
     esac
@@ -345,21 +356,50 @@ setup_ssh_keys() {
     
     read -p "Enter choice [1-4]: " ssh_choice < /dev/tty
     
-    case $ssh_choice in
+    # Validate choice input
+    case "${ssh_choice:-}" in
         1)
             echo "Paste your private key (press Ctrl+D when done):"
             mkdir -p ~/.ssh
-            cat > ~/.ssh/id_rsa
+            # Create temporary file for validation
+            temp_private=$(mktemp)
+            cat > "$temp_private"
+            
+            # Validate private key format
+            if ! grep -q "^-----BEGIN.*PRIVATE KEY-----" "$temp_private" || ! grep -q "^-----END.*PRIVATE KEY-----" "$temp_private"; then
+                echo "Error: Invalid private key format" >&2
+                rm -f "$temp_private"
+                return 1
+            fi
+            
+            # Move validated key to final location
+            mv "$temp_private" ~/.ssh/id_rsa
             chmod 600 ~/.ssh/id_rsa
             
             echo "Paste your public key:"
-            cat > ~/.ssh/id_rsa.pub
+            temp_public=$(mktemp)
+            cat > "$temp_public"
+            
+            # Validate public key format
+            if ! grep -q "^ssh-" "$temp_public"; then
+                echo "Error: Invalid public key format" >&2
+                rm -f "$temp_public"
+                return 1
+            fi
+            
+            # Move validated key to final location
+            mv "$temp_public" ~/.ssh/id_rsa.pub
             chmod 644 ~/.ssh/id_rsa.pub
             ;;
         2)
             echo "Generating new SSH key..."
             read -p "Enter your email: " email < /dev/tty
-            ssh-keygen -t rsa -b 4096 -C "$email" -f ~/.ssh/id_rsa -N ""
+            # Validate email format
+            if [[ ! "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+                echo "Error: Invalid email format" >&2
+                return 1
+            fi
+            ssh-keygen -t rsa -b 4096 -C "${email}" -f ~/.ssh/id_rsa -N ""
             echo ""
             echo "🔑 Your public key (add this to GitHub):"
             echo "========================================"
@@ -369,7 +409,22 @@ setup_ssh_keys() {
             ;;
         3)
             read -p "Enter GitHub username: " github_user < /dev/tty
-            curl -s "https://github.com/$github_user.keys" > ~/.ssh/id_rsa.pub
+            # Validate GitHub username (alphanumeric, dash, underscore only)
+            if ! validate_input "${github_user}"; then
+                echo "Error: Invalid GitHub username format" >&2
+                return 1
+            fi
+            # Use timeout and validate response
+            if ! curl -s --max-time 10 "https://github.com/${github_user}.keys" > ~/.ssh/id_rsa.pub; then
+                echo "Error: Failed to fetch keys from GitHub" >&2
+                return 1
+            fi
+            # Validate the downloaded content looks like SSH keys
+            if ! grep -q "^ssh-" ~/.ssh/id_rsa.pub; then
+                echo "Error: No valid SSH keys found for user ${github_user}" >&2
+                rm -f ~/.ssh/id_rsa.pub
+                return 1
+            fi
             echo "⚠️  Public key imported. You'll need the private key manually."
             ;;
         4)
@@ -378,9 +433,8 @@ setup_ssh_keys() {
             return 0
             ;;
         *)
-            echo "Invalid choice. Skipping SSH setup."
-            SKIP_SSH=true
-            return 0
+            echo "Error: Invalid choice '${ssh_choice}'. Please enter 1-4." >&2
+            return 1
             ;;
     esac
     
