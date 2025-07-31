@@ -548,19 +548,11 @@ else
         echo -e "${YELLOW}⚠️  Docker not installed. Container features will be limited.${RESET}"
     fi
     
-    # Install edc command - SIMPLIFIED APPROACH
-    echo -e "${CYAN}🔧 Installing edc container management command...${RESET}"
+    # Install edc command - ALWAYS UPDATE TO LATEST VERSION
+    echo -e "${CYAN}🔧 Installing/updating edc container management command...${RESET}"
     
-    # Check if edc already exists in system PATH
-    if command -v edc >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ edc command already available in system PATH${RESET}"
-        echo -e "${CYAN}   Location: $(which edc)${RESET}"
-    else
-        # Create bin directory
-        mkdir -p "$HOME/.fenix/bin"
-        
-        # Create a simple working edc script if we can't find the original
-        cat > "$HOME/.fenix/bin/edc" << 'EOF'
+    # Always update edc to latest version in /usr/local/bin
+    sudo tee /usr/local/bin/edc > /dev/null << 'EOF'
 #!/bin/bash
 # edc - Easy Docker Container access script
 # Usage: edc [container_number]
@@ -642,16 +634,9 @@ else
     docker exec -it "$container_name" /bin/bash
 fi
 EOF
-        
-        chmod +x "$HOME/.fenix/bin/edc"
-        echo -e "${GREEN}✅ edc command created at ~/.fenix/bin/edc${RESET}"
-        
-        # Add to PATH in .bashrc if not already there
-        if ! grep -q ".fenix/bin" ~/.bashrc; then
-            echo 'export PATH="$HOME/.fenix/bin:$PATH"' >> ~/.bashrc
-            echo -e "${GREEN}✅ Added ~/.fenix/bin to PATH in .bashrc${RESET}"
-        fi
-    fi
+    
+    sudo chmod +x /usr/local/bin/edc
+    echo -e "${GREEN}✅ edc command installed/updated at /usr/local/bin/edc${RESET}"
     
     # Check for existing container systems
     echo ""

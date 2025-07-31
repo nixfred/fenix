@@ -53,15 +53,12 @@ fi
 FENIX_BIN="$HOME/.fenix/bin"
 mkdir -p "$FENIX_BIN"
 
-# Install edc command - GUARANTEED WORKING APPROACH
-if command -v edc >/dev/null 2>&1; then
-    echo -e "${GREEN}✅ edc command already available in system PATH${RESET}"
-    echo -e "${CYAN}   Location: $(which edc)${RESET}"
-else
-    echo -e "${CYAN}🔧 Creating edc command...${RESET}"
-    
-    # Create a fully functional edc script
-    cat > "$FENIX_BIN/edc" << 'EOF'
+# Install edc command - ALWAYS UPDATE TO LATEST VERSION
+echo -e "${CYAN}🔧 Installing/updating edc command to /usr/local/bin/edc...${RESET}"
+
+# Always create/update edc with latest version regardless of existing installation
+# Create a fully functional edc script
+sudo tee /usr/local/bin/edc > /dev/null << 'EOF'
 #!/bin/bash
 # edc - Easy Docker Container access script
 # Usage: edc [container_number]
@@ -143,10 +140,9 @@ else
     docker exec -it "$container_name" /bin/bash
 fi
 EOF
-    
-    chmod +x "$FENIX_BIN/edc"
-    echo -e "${GREEN}✅ edc command created at $FENIX_BIN/edc${RESET}"
-fi
+
+sudo chmod +x /usr/local/bin/edc
+echo -e "${GREEN}✅ edc command installed/updated at /usr/local/bin/edc${RESET}"
 
 # Check for existing container systems
 echo ""
