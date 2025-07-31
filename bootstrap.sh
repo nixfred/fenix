@@ -725,6 +725,57 @@ EOF
     
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
 fi
+
+# Install Ubuntu container system wrappers (skip for work machines)
+if [ "$WORK_MACHINE" = false ]; then
+    echo ""
+    echo -e "${CYAN}🐧 Installing Ubuntu container system wrappers...${RESET}"
+    
+    # Install start command wrapper
+    echo "📦 Installing system 'start' command wrapper..."
+    sudo tee /usr/local/bin/start > /dev/null << 'EOF'
+#!/bin/bash
+# FeNix Ubuntu Container Start - System Wrapper
+# Redirects to the FeNix ubuntu-start command
+
+# Check if FeNix dotfiles ubuntu-start exists
+FENIX_START="/home/pi/fenix-dotfiles/bin/ubuntu-start"
+
+if [ -f "$FENIX_START" ]; then
+    # Execute the FeNix version
+    exec "$FENIX_START" "$@"
+else
+    echo "❌ FeNix ubuntu-start not found at $FENIX_START"
+    echo "💡 Try running: source ~/.bashrc && ubuntu-start"
+    exit 1
+fi
+EOF
+    sudo chmod +x /usr/local/bin/start 2>/dev/null || echo "⚠️ Could not make start command executable"
+    
+    # Install destroy command wrapper
+    echo "📦 Installing system 'destroy' command wrapper..."
+    sudo tee /usr/local/bin/destroy > /dev/null << 'EOF'
+#!/bin/bash
+# FeNix Ubuntu Container Destroy - System Wrapper
+# Redirects to the FeNix ubuntu-destroy command
+
+# Check if FeNix dotfiles ubuntu-destroy exists
+FENIX_DESTROY="/home/pi/fenix-dotfiles/bin/ubuntu-destroy"
+
+if [ -f "$FENIX_DESTROY" ]; then
+    # Execute the FeNix version
+    exec "$FENIX_DESTROY" "$@"
+else
+    echo "❌ FeNix ubuntu-destroy not found at $FENIX_DESTROY"
+    echo "💡 Try running: source ~/.bashrc && ubuntu-destroy"
+    exit 1
+fi
+EOF
+    sudo chmod +x /usr/local/bin/destroy 2>/dev/null || echo "⚠️ Could not make destroy command executable"
+    
+    echo -e "${GREEN}✅ Ubuntu container system wrappers installed!${RESET}"
+    echo -e "${CYAN}💡 Usage: 'start' and 'destroy' commands now available system-wide${RESET}"
+fi
 fi  # End of work machine check
 
 # Install ts (timeshift) command wrapper (skip for work machines)
@@ -805,7 +856,7 @@ if [ "$PUBLIC_ONLY" = true ]; then
         echo "• Enhanced aliases and functions for productivity"
         echo "• Multi-host aware configurations"
         echo "• Basic FeNix directory structure"
-        echo "• Container management tools (edc command)"
+        echo "• Container management tools (edc, ubuntu-start, ubuntu-destroy commands)"
         echo ""
         echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
     fi
@@ -825,6 +876,8 @@ echo "• sb - Reload shell configuration"
 echo "• j proj - Jump to projects directory"  
 echo "• neo - System information banner"
 echo "• edc - Container management (if Docker available)"
+echo "• start / ubuntu-start - Create Ubuntu development containers"
+echo "• destroy / ubuntu-destroy - Remove containers interactively"
 echo "• pp - Smart SSH between hosts"
 echo ""
 
