@@ -752,9 +752,45 @@ EOF
     
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
 else
-    # Running in container - skip Docker setup
+    # Running in container - skip Docker setup but create basic commands
     echo -e "${CYAN}💡 Running inside container - skipping Docker management setup${RESET}"
-    echo -e "${CYAN}📦 Basic FeNix configuration will be applied${RESET}"
+    echo -e "${CYAN}📦 Creating container-friendly versions of FeNix commands${RESET}"
+    
+    # Create user bin directory
+    mkdir -p "$HOME/.local/bin"
+    
+    # Create basic edc command for containers
+    cat > "$HOME/.local/bin/edc" << 'EOF'
+#!/bin/bash
+# edc - Container version (limited functionality)
+echo "FeNix edc (container mode)"
+echo "This command is designed for host systems with Docker."
+echo "Inside containers, use standard shell navigation instead."
+echo ""
+echo "Available alternatives:"
+echo "• Use 'exit' to leave this container"
+echo "• Use standard bash navigation commands"
+EOF
+    chmod +x "$HOME/.local/bin/edc"
+    
+    # Create basic start command for containers  
+    cat > "$HOME/.local/bin/start" << 'EOF'
+#!/bin/bash
+# start - Container version (informational)
+echo "FeNix start (container mode)"
+echo "This command is designed for host systems."
+echo "You are already inside a container environment."
+echo ""
+echo "To create containers, run this command on the host system."
+EOF
+    chmod +x "$HOME/.local/bin/start"
+    
+    # Add to PATH in bashrc if not already there
+    if ! grep -q ".local/bin" ~/.bashrc 2>/dev/null; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+    fi
+    
+    echo -e "${GREEN}✅ Container-friendly commands created in ~/.local/bin${RESET}"
 fi
 
 # Install Ubuntu container system wrappers (skip for work machines)
