@@ -40,6 +40,7 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 ```
 
 ### Step 2: Choose Machine Type
+### Note to Claude Code pls make 1 the remote machine and 2 being move ron....
 The installer will ask:
 ```
 🤖 Machine Identity Detection
