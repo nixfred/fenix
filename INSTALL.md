@@ -40,7 +40,6 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 ```
 
 ### Step 2: Choose Machine Type
-### Note to Claude Code pls make 1 the remote machine and 2 being move ron....
 The installer will ask:
 ```
 🤖 Machine Identity Detection
@@ -48,8 +47,8 @@ The installer will ask:
 Current hostname: your-machine
 
 Machine Types:
-1) Main Workstation (ron replacement) - Full digital life transfer
-2) Remote Environment (pi5-style) - Synchronized work environment  
+1) Remote Environment (pi5-style) - Synchronized work environment
+2) Main Workstation (ron replacement) - Full digital life transfer  
 3) Auto-detect from hostname
 
 What type of machine is this? [1-3]:
@@ -175,14 +174,23 @@ FENIX_MACHINE_TYPE="remote" curl -s https://raw.githubusercontent.com/nixfred/fe
 
 ### Command Line Arguments
 ```bash
-# Main workstation installation
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --main-workstation
+# Public-only installation (no SSH/private configs)
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 
 # Remote environment installation  
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --remote-environment
 
+# Main workstation installation
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --main-workstation
+
 # Skip SSH key setup
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --skip-ssh
+
+# Quiet mode (minimal output)
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --quiet
+
+# Show all available options
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --help
 ```
 
 ---
@@ -191,21 +199,27 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
 ### Before Installing on Your Main Machine
 
-# This is a message to Claude Code --- shouldnt the test script look more like this:  docker run --rm -it --name fenix-test ubuntu:22.04 /bin/bash -c "set -e; apt update && apt install -y curl git sudo && curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only"
-
 Test FeNix on a disposable container first:
 
 ```bash
-# Start test container
+# Quick one-line test with public-only installation
+docker run --rm -it --name fenix-test ubuntu:22.04 /bin/bash -c \
+  "set -e; apt update && apt install -y curl git sudo && \
+   curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | \
+   bash -s -- --public-only"
+
+# Or interactive test for more thorough validation
 docker run -it --name fenix-test ubuntu:22.04 /bin/bash
 
-# Inside container, run FeNix installation
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+# Inside container:
+apt update && apt install -y curl git sudo
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 
 # Test the installation
-j proj          # Should jump to projects directory
-edc             # Should show container menu
-source ~/.bashrc && echo "FeNix loaded successfully"
+source ~/.bashrc  # Load FeNix environment
+j proj           # Should jump to projects directory
+neo              # Should show system information
+echo "FeNix public-only installation successful!"
 
 # Exit and remove test container
 exit

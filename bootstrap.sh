@@ -4,6 +4,53 @@
 
 set -e
 
+# Parse command line arguments
+SKIP_SSH=false
+PUBLIC_ONLY=false
+QUIET_MODE=false
+FORCE_MACHINE_TYPE=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --skip-ssh)
+            SKIP_SSH=true
+            shift
+            ;;
+        --public-only)
+            PUBLIC_ONLY=true
+            SKIP_SSH=true
+            shift
+            ;;
+        --quiet)
+            QUIET_MODE=true
+            shift
+            ;;
+        --remote-environment)
+            FORCE_MACHINE_TYPE="remote"
+            shift
+            ;;
+        --main-workstation)
+            FORCE_MACHINE_TYPE="main"
+            shift
+            ;;
+        --help|-h)
+            echo "FeNix Bootstrap Options:"
+            echo "  --public-only          Install only public configs (no SSH/private)"
+            echo "  --skip-ssh             Skip SSH key setup"
+            echo "  --quiet                Minimal output"
+            echo "  --remote-environment   Force remote environment setup"
+            echo "  --main-workstation     Force main workstation setup"
+            echo "  --help                 Show this help"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for available options"
+            exit 1
+            ;;
+    esac
+done
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -28,8 +75,8 @@ detect_machine_type() {
     echo "Current hostname: $current_hostname"
     echo ""
     echo "Machine Types:"
-    echo "1) Main Workstation (ron replacement) - Full digital life transfer"
-    echo "2) Remote Environment (pi5-style) - Synchronized work environment"
+    echo "1) Remote Environment (pi5-style) - Synchronized work environment"
+    echo "2) Main Workstation (ron replacement) - Full digital life transfer"
     echo "3) Auto-detect from hostname"
     echo ""
     
@@ -37,18 +84,18 @@ detect_machine_type() {
     
     case $machine_type in
         1)
-            MACHINE_ROLE="main"
-            echo -e "${GREEN}📍 Configuring as MAIN WORKSTATION${RESET}"
-            echo "   • Will inherit 'ron' identity and full configuration"
-            echo "   • SSH keys, containers, and data will be restored"
-            echo "   • Remote machines will connect to this as primary"
-            ;;
-        2)
             MACHINE_ROLE="remote"
             echo -e "${CYAN}📍 Configuring as REMOTE ENVIRONMENT${RESET}"
             echo "   • Will keep current hostname: $current_hostname"
             echo "   • Synchronized configs but separate identity"
             echo "   • Will connect back to main workstation (ron)"
+            ;;
+        2)
+            MACHINE_ROLE="main"
+            echo -e "${GREEN}📍 Configuring as MAIN WORKSTATION${RESET}"
+            echo "   • Will inherit 'ron' identity and full configuration"
+            echo "   • SSH keys, containers, and data will be restored"
+            echo "   • Remote machines will connect to this as primary"
             ;;
         3)
             if [[ "$current_hostname" == "ron" ]]; then
@@ -73,8 +120,14 @@ echo -e "${RESET}"
 FENIX_DIR="$HOME/.fenix"
 START_TIME=$(date +%s)
 
-# Detect machine type first
-detect_machine_type
+# Detect machine type first (unless forced)
+if [ -n "$FORCE_MACHINE_TYPE" ]; then
+    MACHINE_ROLE="$FORCE_MACHINE_TYPE"
+    CURRENT_HOSTNAME=$(hostname)
+    echo -e "${GREEN}🎯 Machine type forced: $MACHINE_ROLE${RESET}"
+else
+    detect_machine_type
+fi
 
 # Phase 1: Public System Setup
 echo -e "${YELLOW}📦 Phase 1: Public System Setup${RESET}"
@@ -127,11 +180,41 @@ cd dotfiles
 ./install.sh --stage1
 
 echo -e "${GREEN}✅ Phase 1 Complete: Basic system ready!${RESET}"
+
+# Exit early if public-only mode
+if [ "$PUBLIC_ONLY" = true ]; then
+    END_TIME=$(date +%s)
+    TOTAL_TIME=$((END_TIME - START_TIME))
+    
+    echo ""
+    echo -e "${BOLD}${GREEN}🎉 FeNix PUBLIC-ONLY Installation Complete! 🎉${RESET}"
+    echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
+    echo ""
+    echo -e "${YELLOW}Public-only installation includes:${RESET}"
+    echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
+    echo "• Enhanced aliases and functions for productivity"
+    echo "• Multi-host aware configurations"
+    echo "• Basic FeNix directory structure"
+    echo ""
+    echo -e "${CYAN}To complete setup:${RESET}"
+    echo "• Run: source ~/.bashrc"
+    echo "• Test: j proj (should jump to project directory)"
+    echo "• For full FeNix: Re-run without --public-only flag"
+    echo ""
+    echo -e "${CYAN}FeNix Phoenix System (public-only) ready! 🔥${RESET}"
+    exit 0
+fi
+
 echo ""
 
-# Phase 2: SSH Key Setup
-echo -e "${YELLOW}🔑 Phase 2: SSH Key Setup${RESET}"
-echo "=========================="
+# Phase 2: SSH Key Setup (unless skipped)
+if [ "$SKIP_SSH" = false ]; then
+    echo -e "${YELLOW}🔑 Phase 2: SSH Key Setup${RESET}"
+    echo "=========================="
+else
+    echo -e "${YELLOW}⏭️  Phase 2: SSH Key Setup (SKIPPED)${RESET}"
+    echo "==============================="
+fi
 
 setup_ssh_keys() {
     echo "Choose SSH key setup method:"
@@ -186,7 +269,7 @@ setup_ssh_keys() {
     fi
 }
 
-if setup_ssh_keys; then
+if [ "$SKIP_SSH" = false ] && setup_ssh_keys; then
     # Phase 3: Private Repository Setup
     echo ""
     echo -e "${YELLOW}🔐 Phase 3: Private Repository Setup${RESET}"
@@ -265,7 +348,11 @@ if setup_ssh_keys; then
         echo "You can run 'fenix sync-private' later to push your configs."
     fi
 else
-    echo -e "${YELLOW}⏭️  Skipping private repository setup (SSH not configured)${RESET}"
+    if [ "$SKIP_SSH" = true ]; then
+        echo -e "${YELLOW}⏭️  Skipping private repository setup (SSH setup skipped)${RESET}"
+    else
+        echo -e "${YELLOW}⏭️  Skipping private repository setup (SSH not configured)${RESET}"
+    fi
 fi
 
 # Phase 4: Container Setup
