@@ -202,28 +202,13 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 Test FeNix on a disposable container first:
 
 ```bash
-# Quick one-line test with public-only installation
-docker run --rm -it --name fenix-test ubuntu:22.04 /bin/bash -c \
+# One-command test with validation
+docker run --rm --name fenix-test ubuntu:22.04 /bin/bash -c \
   "set -e; apt update && apt install -y curl git sudo && \
    curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | \
-   bash -s -- --public-only"
-
-# Or interactive test for more thorough validation
-docker run -it --name fenix-test ubuntu:22.04 /bin/bash
-
-# Inside container:
-apt update && apt install -y curl git sudo
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
-
-# Test the installation
-source ~/.bashrc  # Load FeNix environment
-j proj           # Should jump to projects directory
-neo              # Should show system information
-echo "FeNix public-only installation successful!"
-
-# Exit and remove test container
-exit
-docker rm fenix-test
+   bash -s -- --public-only && \
+   source ~/.bashrc && \
+   j proj && echo 'FeNix test completed successfully!'"
 ```
 
 ---
