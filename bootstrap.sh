@@ -80,7 +80,12 @@ detect_machine_type() {
     echo "3) Auto-detect from hostname"
     echo ""
     
-    read -p "What type of machine is this? [1-3]: " machine_type
+    # Auto-detect for non-interactive mode or default to option 3 for interactive
+    if [ -t 0 ]; then
+        read -p "What type of machine is this? [1-3]: " machine_type
+    else
+        machine_type=3  # Auto-detect for non-interactive (piped) input
+    fi
     
     case $machine_type in
         1)
@@ -88,27 +93,37 @@ detect_machine_type() {
             echo -e "${CYAN}📍 Configuring as REMOTE ENVIRONMENT${RESET}"
             echo "   • Will keep current hostname: $current_hostname"
             echo "   • Synchronized configs but separate identity"
-            echo "   • Will connect back to main workstation (ron)"
+            echo "   • Will connect back to main workstation"
             ;;
         2)
             MACHINE_ROLE="main"
             echo -e "${GREEN}📍 Configuring as MAIN WORKSTATION${RESET}"
-            echo "   • Will inherit 'ron' identity and full configuration"
+            echo "   • Will change hostname to 'ron' and inherit full configuration"
             echo "   • SSH keys, containers, and data will be restored"
             echo "   • Remote machines will connect to this as primary"
             ;;
-        3)
-            if [[ "$current_hostname" == "ron" ]]; then
+        3|"")
+            # Relaxed auto-detection: check for common main workstation indicators
+            if [[ "$current_hostname" == "ron" ]] || [[ "$current_hostname" == *"main"* ]] || [[ "$current_hostname" == *"workstation"* ]]; then
                 MACHINE_ROLE="main"
-                echo -e "${GREEN}📍 AUTO-DETECTED: MAIN WORKSTATION (ron)${RESET}"
+                echo -e "${GREEN}📍 AUTO-DETECTED: MAIN WORKSTATION ($current_hostname)${RESET}"
+                echo "   • Detected as main workstation based on hostname pattern"
             else
                 MACHINE_ROLE="remote"
                 echo -e "${CYAN}📍 AUTO-DETECTED: REMOTE ENVIRONMENT ($current_hostname)${RESET}"
+                echo "   • Will keep current hostname and configure as remote environment"
             fi
             ;;
         *)
-            echo -e "${RED}❌ Invalid choice. Defaulting to remote environment.${RESET}"
-            MACHINE_ROLE="remote"
+            echo -e "${YELLOW}⚠️  Unknown input '$machine_type'. Using auto-detection.${RESET}"
+            # Fall back to auto-detection logic
+            if [[ "$current_hostname" == "ron" ]] || [[ "$current_hostname" == *"main"* ]] || [[ "$current_hostname" == *"workstation"* ]]; then
+                MACHINE_ROLE="main"
+                echo -e "${GREEN}📍 DEFAULTED: MAIN WORKSTATION ($current_hostname)${RESET}"
+            else
+                MACHINE_ROLE="remote"
+                echo -e "${CYAN}📍 DEFAULTED: REMOTE ENVIRONMENT ($current_hostname)${RESET}"
+            fi
             ;;
     esac
     
