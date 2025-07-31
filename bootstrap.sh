@@ -1,6 +1,12 @@
 #!/bin/bash
 # 🔥 FeNix Bootstrap - One Command to Rule Them All
-# Usage: curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+# 
+# Basic usage:
+#   curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+#
+# With options (note the -s -- syntax):
+#   curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
+#   curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
 
 set -e
 
@@ -665,22 +671,29 @@ if [ "$PUBLIC_ONLY" = true ]; then
         echo "• Basic FeNix directory structure"
         echo "• Container management tools (edc command)"
         echo ""
-        echo -e "${CYAN}To complete setup:${RESET}"
-        echo "• Run: source ~/.bashrc"
-        echo "• Test: j proj (should jump to project directory)"
-        echo "• Test: edc (container management tool)"
-        echo "• For full FeNix: Re-run without --public-only flag"
-        echo ""
         echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
     fi
 else
     echo -e "${BOLD}${GREEN}🎉🎉🎉 FeNix RESURRECTION COMPLETE! 🎉🎉🎉${RESET}"
     echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
     echo ""
-    echo -e "${YELLOW}Next steps:${RESET}"
-    echo "• Run: source ~/.bashrc"
-    echo "• Test: j proj (should jump to project directory)"
-    echo "• Test: edc (container access if Docker available)"
-    echo ""
     echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"
+fi
+
+# Auto-load new environment to show it's working
+echo ""
+echo -e "${BOLD}${CYAN}🔄 Loading new environment...${RESET}"
+if [ -f ~/.bashrc ]; then
+    export FENIX_NO_BANNER=1  # Prevent duplicate banner on load
+    source ~/.bashrc
+    echo -e "${BOLD}${GREEN}✅ Environment loaded successfully!${RESET}"
+    echo ""
+    echo -e "${YELLOW}Available commands:${RESET}"
+    echo "• j proj - Jump to projects directory"
+    echo "• neo - System information banner"
+    echo "• edc - Container management (if Docker available)"
+    echo "• pp - Smart SSH between hosts"
+    echo ""
+else
+    echo -e "${BOLD}${RED}⚠️  ~/.bashrc not found - please run: source ~/.bashrc manually${RESET}"
 fi
