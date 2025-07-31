@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🔥 FeNix Phoenix Testing Labs - Master Test Runner
+# 🔥 FeNix Testing Labs - Master Test Runner
 # Orchestrates all FeNix testing suites
 
 set -e
@@ -16,17 +16,17 @@ RESET='\033[0m'
 
 # Configuration
 SCRIPT_DIR="$(dirname "$0")"
-RESULTS_DIR="phoenix_labs_$(date +%Y%m%d_%H%M%S)"
+RESULTS_DIR="fenix_labs_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$RESULTS_DIR"
 
 show_banner() {
     clear
     echo -e "${BOLD}${RED}🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥${RESET}"
-    echo -e "${BOLD}${YELLOW}                 FeNix Phoenix Testing Labs                ${RESET}"
+    echo -e "${BOLD}${YELLOW}                  FeNix Testing Labs                  ${RESET}"
     echo -e "${BOLD}${CYAN}                Rise from the Ashes, Stronger              ${RESET}"
     echo -e "${BOLD}${RED}🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥${RESET}"
     echo ""
-    echo -e "${CYAN}Comprehensive testing suite for FeNix Phoenix System${RESET}"
+    echo -e "${CYAN}Comprehensive testing suite for FeNix System${RESET}"
     echo -e "${CYAN}Validates portability, resilience, and performance${RESET}"
     echo ""
 }
@@ -311,9 +311,9 @@ generate_comprehensive_report() {
     local total_duration="${test_results[-1]}"
     unset test_results[-1]  # Remove duration from results array
     
-    local report_file="$RESULTS_DIR/phoenix_labs_report.md"
+    local report_file="$RESULTS_DIR/fenix_labs_report.md"
     
-    echo -e "${BOLD}${BLUE}🔥 Phoenix Labs Comprehensive Report${RESET}"
+    echo -e "${BOLD}${BLUE}🔥 FeNix Labs Comprehensive Report${RESET}"
     echo "====================================="
     echo ""
     
@@ -352,16 +352,16 @@ generate_comprehensive_report() {
     # Overall grade
     local overall_grade=""
     if [ $success_rate -eq 100 ]; then
-        overall_grade="🏆 PHOENIX GOLD"
-        echo -e "${GREEN}${BOLD}🏆 PHOENIX GOLD: FeNix achieves perfect test results!${RESET}"
+        overall_grade="🏆 FENIX GOLD"
+        echo -e "${GREEN}${BOLD}🏆 FENIX GOLD: FeNix achieves perfect test results!${RESET}"
         echo -e "${GREEN}   Ready for production deployment across all environments${RESET}"
     elif [ $success_rate -ge 90 ]; then
-        overall_grade="🥈 PHOENIX SILVER"
-        echo -e "${YELLOW}${BOLD}🥈 PHOENIX SILVER: FeNix performs excellently${RESET}"
+        overall_grade="🥈 FENIX SILVER"
+        echo -e "${YELLOW}${BOLD}🥈 FENIX SILVER: FeNix performs excellently${RESET}"
         echo -e "${YELLOW}   Minor issues detected, but production ready${RESET}"
     elif [ $success_rate -ge 75 ]; then
-        overall_grade="🥉 PHOENIX BRONZE"
-        echo -e "${YELLOW}${BOLD}🥉 PHOENIX BRONZE: FeNix shows good resilience${RESET}"
+        overall_grade="🥉 FENIX BRONZE"
+        echo -e "${YELLOW}${BOLD}🥉 FENIX BRONZE: FeNix shows good resilience${RESET}"
         echo -e "${YELLOW}   Some issues need addressing before wide deployment${RESET}"
     else
         overall_grade="⚠️ NEEDS IMPROVEMENT"
@@ -375,7 +375,7 @@ generate_comprehensive_report() {
     
     # Generate markdown report
     cat > "$report_file" << EOF
-# FeNix Phoenix Testing Labs - Comprehensive Report
+# FeNix Testing Labs - Comprehensive Report
 
 **Generated:** $(date)
 **Duration:** $((total_duration / 60))m $((total_duration % 60))s
@@ -383,7 +383,7 @@ generate_comprehensive_report() {
 
 ## Executive Summary
 
-FeNix Phoenix System achieved a **$success_rate%** success rate across all testing categories.
+FeNix System achieved a **$success_rate%** success rate across all testing categories.
 
 - **Total Tests:** $total_tests categories
 - **Passed:** $passed_tests
@@ -401,10 +401,10 @@ $(for result in "${test_results[@]}"; do
     fi
 done)
 
-## Phoenix Labs Certification
+## FeNix Labs Certification
 
 $(if [ $success_rate -eq 100 ]; then
-    echo "🏆 **PHOENIX GOLD CERTIFICATION**"
+    echo "🏆 **FENIX GOLD CERTIFICATION**"
     echo ""
     echo "FeNix has achieved perfect test results across all categories:"
     echo "- Multi-distribution compatibility"
@@ -413,13 +413,13 @@ $(if [ $success_rate -eq 100 ]; then
     echo ""
     echo "**Recommendation:** Production ready for all environments"
 elif [ $success_rate -ge 90 ]; then
-    echo "🥈 **PHOENIX SILVER CERTIFICATION**"
+    echo "🥈 **FENIX SILVER CERTIFICATION**"
     echo ""
     echo "FeNix demonstrates excellent performance with minor issues."
     echo ""
     echo "**Recommendation:** Production ready with noted limitations"
 elif [ $success_rate -ge 75 ]; then
-    echo "🥉 **PHOENIX BRONZE CERTIFICATION**"
+    echo "🥉 **FENIX BRONZE CERTIFICATION**"
     echo ""
     echo "FeNix shows good resilience but has areas for improvement."
     echo ""
@@ -457,13 +457,13 @@ $(if [ $success_rate -lt 100 ]; then
     done
 else
     echo "### Maintenance"
-    echo "- Continue regular Phoenix Labs testing"
+    echo "- Continue regular FeNix Labs testing"
     echo "- Monitor performance metrics in production"
     echo "- Update test suites as new requirements emerge"
 fi)
 
 ---
-*Generated by FeNix Phoenix Testing Labs - Rise from the ashes, stronger! 🔥*
+*Generated by FeNix Testing Labs - Rise from the ashes, stronger! 🔥*
 EOF
 
     echo -e "${CYAN}📝 Comprehensive report: $report_file${RESET}"
@@ -471,7 +471,7 @@ EOF
 
 # Show test menu
 show_test_menu() {
-    echo -e "${YELLOW}🧪 FeNix Phoenix Testing Labs${RESET}"
+    echo -e "${YELLOW}🧪 FeNix Testing Labs${RESET}"
     echo "============================="
     echo ""
     echo "Available test suites:"
@@ -510,7 +510,7 @@ show_test_menu() {
             run_performance_tests "${perf_type:-single}"
             ;;
         0) 
-            echo "Exiting Phoenix Labs..."
+            echo "Exiting FeNix Labs..."
             exit 0
             ;;
         *)
@@ -555,7 +555,7 @@ main() {
 
 # Show usage if requested
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-    echo "FeNix Phoenix Testing Labs - Master Test Runner"
+    echo "FeNix Testing Labs - Master Test Runner"
     echo ""
     echo "Usage: $0 [suite] [options]"
     echo ""

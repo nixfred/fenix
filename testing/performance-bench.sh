@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🔥 FeNix Phoenix Testing Labs - Performance Benchmarking
+# 🔥 FeNix Testing Labs - Performance Benchmarking
 # Measures FeNix deployment performance and optimization opportunities
 
 set -e

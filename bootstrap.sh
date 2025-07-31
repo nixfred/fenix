@@ -201,7 +201,7 @@ if [ "$PUBLIC_ONLY" = true ]; then
     echo "• Test: j proj (should jump to project directory)"
     echo "• For full FeNix: Re-run without --public-only flag"
     echo ""
-    echo -e "${CYAN}FeNix Phoenix System (public-only) ready! 🔥${RESET}"
+    echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
     exit 0
 fi
 

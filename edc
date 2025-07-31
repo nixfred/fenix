@@ -1,6 +1,6 @@
 #!/bin/bash
 # 🔥 FeNix Enhanced Docker Container (edc) - Container Access Tool
-# Part of the FeNix Phoenix System - Quick container access and management
+# Part of the FeNix System - Quick container access and management
 
 set -e
 

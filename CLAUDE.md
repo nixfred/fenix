@@ -30,14 +30,14 @@ While others manage just dotfiles, FeNix manages **your entire digital life**:
 FeNix Master Repository Structure:
 ├── CLAUDE.md                    # This file - AI assistant instructions
 ├── README.md                    # Human-readable project overview  
-├── bootstrap/                   # Phoenix resurrection scripts
+├── bootstrap/                   # FeNix resurrection scripts
 │   ├── stage1-public.sh        # Anonymous bootstrap (no auth needed)
 │   ├── stage2-ssh.sh           # SSH key configuration wizard  
 │   ├── stage3-private.sh       # Private repository deployment
 │   └── resurrect.sh            # Master one-command rebuilder
 ├── dotfiles/                   # Submodule → your dotfiles repo
 ├── containers/                 # Submodule → universal container creator
-├── testing/                    # Phoenix Testing Labs
+├── testing/                    # FeNix Testing Labs
 │   ├── multi-distro-test.sh   # Test across Linux distributions
 │   ├── chaos-engineering.sh   # Break things to make them stronger
 │   └── performance-bench.sh   # Measure deployment speed
@@ -60,7 +60,7 @@ No more hardcoded paths! FeNix automatically discovers:
 - **Bidirectional Sync**: Real-time file synchronization
 - **Container Deployment**: Orchestrates Docker across both hosts
 
-### 3. **Phoenix Testing Labs**
+### 3. **FeNix Testing Labs**
 Revolutionary testing approach:
 ```bash
 # Test FeNix on pristine containers
@@ -194,7 +194,7 @@ docker run --platform linux/amd64 ubuntu:22.04 ./test-fenix-x86_64.sh
 ## Contributing to FeNix
 
 ### **Development Workflow**
-1. **Test First**: Use Phoenix Testing Labs before deploying
+1. **Test First**: Use FeNix Testing Labs before deploying
 2. **Document Changes**: Update relevant CLAUDE.md files
 3. **Maintain Portability**: No hardcoded paths, dynamic detection only
 4. **Security Review**: Ensure no secrets in public repos

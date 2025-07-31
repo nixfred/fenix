@@ -1,4 +1,4 @@
-# 📚 FeNix Phoenix System - Complete Runbook
+# 📚 FeNix System - Complete Runbook
 
 **Digital Life as Code (DLaC)** - Rise from the ashes in under 10 minutes
 
@@ -105,7 +105,7 @@ Built-in system health dashboard:
 ****************************************************
 ```
 
-#### **Phoenix Testing Labs**
+#### **FeNix Testing Labs**
 Revolutionary validation approach:
 - **Multi-Distro**: Ubuntu, Debian, Fedora, Arch, Alpine, CentOS
 - **Cross-Architecture**: ARM64 (Raspberry Pi) + x86_64 (laptops/servers)
@@ -200,7 +200,7 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 - ✅ Dynamic shell environment with path detection
 - ✅ Multi-host synchronization (pi5 ↔ ron)
 - ✅ Container orchestration and management
-- ✅ Phoenix Testing Labs validation
+- ✅ FeNix Testing Labs validation
 
 ### 🚀 **Phase 2: Intelligence** (Next)
 - 🔄 Machine learning for usage pattern optimization  
@@ -230,7 +230,7 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 - **Security**: Defense in depth, no secret leakage
 
 ### 🧪 **Development Workflow**
-1. **Test First**: Use Phoenix Testing Labs before deploying
+1. **Test First**: Use FeNix Testing Labs before deploying
 2. **Document Changes**: Update CLAUDE.md files for AI assistants
 3. **Maintain Portability**: No hardcoded paths, dynamic detection only
 4. **Security Review**: Ensure no secrets in public repos
@@ -238,7 +238,7 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
 ### 📝 **Contribution Guidelines**
 - Fork the repository and create feature branches
-- All changes must pass the Phoenix Testing Lab validation
+- All changes must pass the FeNix Testing Lab validation
 - Update documentation for any new features
 - Follow the existing code style and conventions
 - Add tests for new functionality
@@ -263,7 +263,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-Inspired by the Phoenix mythological creature and the principle that great systems should be able to resurrect themselves from nothing but their own descriptions.
+Inspired by the mythological Phoenix and the principle that great systems should be able to resurrect themselves from nothing but their own descriptions.
 
 Special thanks to the open-source community for the tools that make FeNix possible.
 

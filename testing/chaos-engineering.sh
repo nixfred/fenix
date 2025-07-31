@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🔥 FeNix Phoenix Testing Labs - Chaos Engineering
+# 🔥 FeNix Testing Labs - Chaos Engineering
 # Tests FeNix resilience under adverse conditions
 
 set -e
