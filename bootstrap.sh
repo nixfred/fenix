@@ -474,6 +474,16 @@ if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
     ./install.sh 2>/dev/null || {
         echo "⚠️  Container install script failed, using direct installation..."
         cd "$FENIX_DIR"
+        
+        # Direct installation of edc command
+        mkdir -p ~/.fenix/bin
+        if [ -f "$FENIX_DIR/public/edc" ]; then
+            cp "$FENIX_DIR/public/edc" ~/.fenix/bin/edc
+            chmod +x ~/.fenix/bin/edc
+            echo -e "${GREEN}✅ edc command installed to ~/.fenix/bin/edc${RESET}"
+        else
+            echo -e "${RED}❌ edc source file not found: $FENIX_DIR/public/edc${RESET}"
+        fi
     }
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
 else
@@ -680,20 +690,16 @@ else
     echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"
 fi
 
-# Auto-load new environment to show it's working
+# Instructions for activating the new environment
 echo ""
-echo -e "${BOLD}${CYAN}🔄 Loading new environment...${RESET}"
-if [ -f ~/.bashrc ]; then
-    export FENIX_NO_BANNER=1  # Prevent duplicate banner on load
-    source ~/.bashrc
-    echo -e "${BOLD}${GREEN}✅ Environment loaded successfully!${RESET}"
-    echo ""
-    echo -e "${YELLOW}Available commands:${RESET}"
-    echo "• j proj - Jump to projects directory"
-    echo "• neo - System information banner"
-    echo "• edc - Container management (if Docker available)"
-    echo "• pp - Smart SSH between hosts"
-    echo ""
-else
-    echo -e "${BOLD}${RED}⚠️  ~/.bashrc not found - please run: source ~/.bashrc manually${RESET}"
-fi
+echo -e "${BOLD}${CYAN}🔄 To activate your new FeNix environment:${RESET}"
+echo ""
+echo -e "${BOLD}${YELLOW}  source ~/.bashrc${RESET}"
+echo ""
+echo -e "${CYAN}Then test these commands:${RESET}"
+echo "• sb - Reload shell configuration"
+echo "• j proj - Jump to projects directory"  
+echo "• neo - System information banner"
+echo "• edc - Container management (if Docker available)"
+echo "• pp - Smart SSH between hosts"
+echo ""
