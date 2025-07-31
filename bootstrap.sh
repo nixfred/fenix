@@ -798,17 +798,36 @@ else
     echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"
 fi
 
-# Instructions for activating the new environment
+# Auto-activate the new FeNix environment
 echo ""
-echo -e "${BOLD}${CYAN}🔄 To activate your new FeNix environment, run:${RESET}"
+echo -e "${BOLD}${CYAN}🔄 Activating your new FeNix environment...${RESET}"
 echo ""
-echo -e "${BOLD}${YELLOW}  exec bash${RESET}"
-echo ""
-echo -e "${CYAN}This will start a fresh shell with all FeNix commands available:${RESET}"
+echo -e "${CYAN}Available commands after activation:${RESET}"
 echo "• sb - Reload shell configuration"
 echo "• j proj - Jump to projects directory"  
 echo "• neo - System information banner"
 echo "• edc - Container management (if Docker available)"
 echo "• pp - Smart SSH between hosts"
 echo ""
-echo -e "${BOLD}${GREEN}🎉 FeNix is ready! Run 'exec bash' to activate! 🎉${RESET}"
+
+# Since we can't exec in a curl | bash context, we'll source the bashrc and show that commands work
+if [ -f ~/.bashrc ]; then
+    echo -e "${BOLD}${GREEN}🔄 Loading environment...${RESET}"
+    export FENIX_NO_BANNER=1  # Prevent duplicate banner
+    source ~/.bashrc
+    echo -e "${BOLD}${GREEN}✅ Environment loaded! Commands are now available.${RESET}"
+    echo ""
+    
+    # Test that edc is working
+    if command -v edc >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ edc command is ready!${RESET}"
+        edc --help | head -3
+    else
+        echo -e "${YELLOW}⚠️  edc not yet in PATH - run 'exec bash' to refresh${RESET}"
+    fi
+else
+    echo -e "${RED}❌ .bashrc not found${RESET}"
+fi
+
+echo ""
+echo -e "${BOLD}${GREEN}🎉 FeNix installation complete! 🎉${RESET}"

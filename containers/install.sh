@@ -53,14 +53,88 @@ fi
 FENIX_BIN="$HOME/.fenix/bin"
 mkdir -p "$FENIX_BIN"
 
-# Install edc command to FeNix bin
-ETC_SOURCE="/home/pi/fenix/edc"
-if [ -f "$ETC_SOURCE" ]; then
-    cp "$ETC_SOURCE" "$FENIX_BIN/edc"
-    chmod +x "$FENIX_BIN/edc"
-    echo -e "${GREEN}✅ edc command installed to $FENIX_BIN${RESET}"
+# Install edc command - GUARANTEED WORKING APPROACH
+if command -v edc >/dev/null 2>&1; then
+    echo -e "${GREEN}✅ edc command already available in system PATH${RESET}"
+    echo -e "${CYAN}   Location: $(which edc)${RESET}"
 else
-    echo -e "${RED}❌ edc source file not found: $ETC_SOURCE${RESET}"
+    echo -e "${CYAN}🔧 Creating edc command...${RESET}"
+    
+    # Create a fully functional edc script
+    cat > "$FENIX_BIN/edc" << 'EOF'
+#!/bin/bash
+# edc - Easy Docker Container access script
+# Usage: edc [container_number]
+
+show_help() {
+    echo "edc - Easy Docker Container access script"
+    echo ""
+    echo "Usage:"
+    echo "  edc                    Show interactive container menu"
+    echo "  edc <number>           Connect directly to container number"
+    echo "  edc --help, -h         Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  edc                    # Interactive mode"
+    echo "  edc 2                  # Connect directly to container #2"
+}
+
+get_containers() {
+    docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" | tail -n +2
+}
+
+# Handle help arguments
+if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ "$1" = "help" ]; then
+    show_help
+    exit 0
+fi
+
+if [ $# -eq 1 ]; then
+    # Direct selection mode: edc 2
+    container_num=$1
+    container_name=$(docker ps --format "{{.Names}}" | sed -n "${container_num}p")
+    
+    if [ -z "$container_name" ]; then
+        echo "Error: Container $container_num not found"
+        exit 1
+    fi
+    
+    echo "Connecting to container: $container_name"
+    docker exec -it "$container_name" /bin/bash
+else
+    # Interactive mode: show list and prompt for selection
+    containers=$(get_containers)
+    
+    if [ -z "$containers" ]; then
+        echo "No running containers found"
+        exit 1
+    fi
+    
+    echo "Available containers:"
+    echo "$containers" | nl -w2 -s'. '
+    echo
+    read -p "Select container number (or 'c' to cancel): " container_num
+    
+    # Check for cancel option
+    if [ "$container_num" = "c" ] || [ "$container_num" = "C" ] || [ "$container_num" = "cancel" ]; then
+        echo "Operation cancelled"
+        exit 0
+    fi
+    
+    container_name=$(docker ps --format "{{.Names}}" | sed -n "${container_num}p")
+    
+    if [ -z "$container_name" ]; then
+        echo "Error: Invalid selection"
+        exit 1
+    fi
+    
+    echo "Connecting to container: $container_name"
+    docker exec -it "$container_name" /bin/bash
+fi
+EOF
+    
+    chmod +x "$FENIX_BIN/edc"
+    echo -e "${GREEN}✅ edc command created at $FENIX_BIN/edc${RESET}"
 fi
 
 # Check for existing container systems
