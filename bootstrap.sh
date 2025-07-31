@@ -158,7 +158,8 @@ if command -v apt >/dev/null 2>&1; then
         net-tools netstat-nat iotop \
         python3 python3-pip \
         jq ripgrep fd-find \
-        qrencode build-essential
+        qrencode build-essential \
+        timeshift
 elif command -v dnf >/dev/null 2>&1; then
     echo "🔧 Installing FeNix essential packages (Fedora)..."
     sudo dnf install -y \
@@ -168,7 +169,8 @@ elif command -v dnf >/dev/null 2>&1; then
         net-tools iotop \
         python3 python3-pip \
         jq ripgrep fd-find \
-        qrencode @development-tools
+        qrencode @development-tools \
+        timeshift
 elif command -v pacman >/dev/null 2>&1; then
     echo "🔧 Installing FeNix essential packages (Arch)..."
     sudo pacman -Sy --noconfirm \
@@ -178,7 +180,8 @@ elif command -v pacman >/dev/null 2>&1; then
         net-tools iotop \
         python python-pip \
         jq ripgrep fd \
-        qrencode base-devel
+        qrencode base-devel \
+        timeshift
 fi
 
 # Clone public repositories
@@ -255,6 +258,11 @@ neo() {
     echo "Uptime: $(uptime -p 2>/dev/null || uptime)"
     echo "=========================="
 }
+
+# Timeshift alias for system snapshots
+if command -v timeshift >/dev/null 2>&1; then
+    alias ts='sudo timeshift'
+fi
 
 echo "🔥 FeNix shell environment loaded!"
 EOF
