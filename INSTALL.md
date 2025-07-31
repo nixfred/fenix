@@ -34,6 +34,24 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
 ## 🎪 Installation Process
 
+### Quick Commands
+
+#### Fresh System/Container (Recommended)
+```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
+```
+
+#### Existing System with Custom Configurations
+⚠️ **WARNING**: This will modify your ~/.bashrc and may overwrite existing shell configurations
+```bash
+# Backup your current shell configuration first
+cp ~/.bashrc ~/.bashrc.backup.$(date +%Y%m%d_%H%M%S)
+cp ~/.bash_aliases ~/.bash_aliases.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+
+# Then install FeNix (may overwrite existing dotfiles)
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+```
+
 ### Step 1: Run Bootstrap
 ```bash
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
