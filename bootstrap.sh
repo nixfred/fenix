@@ -475,35 +475,50 @@ if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
         echo "⚠️  Container install script failed, using direct installation..."
         cd "$FENIX_DIR"
         
-        # Direct installation of edc command
-        mkdir -p ~/.fenix/bin
-        # Try multiple possible locations for edc
-        EDC_LOCATIONS=(
-            "$FENIX_DIR/public/edc"
-            "$HOME/.fenix/public/edc"
-            "$(dirname "$0")/edc"
-            "./edc"
-            "$HOME/fenix/edc"
-            "/home/pi/fenix/edc"
-            "/usr/local/bin/edc"
-        )
+        # Direct installation fallback - just ensure edc works
+        echo -e "${CYAN}🔧 Setting up edc command (fallback method)...${RESET}"
         
-        EDC_INSTALLED=false
-        for edc_location in "${EDC_LOCATIONS[@]}"; do
-            if [ -f "$edc_location" ]; then
-                cp "$edc_location" ~/.fenix/bin/edc
-                chmod +x ~/.fenix/bin/edc
-                echo -e "${GREEN}✅ edc command installed from $edc_location to ~/.fenix/bin/edc${RESET}"
-                EDC_INSTALLED=true
-                break
-            fi
-        done
-        
-        if [ "$EDC_INSTALLED" = false ]; then
-            echo -e "${RED}❌ edc source file not found in any of these locations:${RESET}"
-            for location in "${EDC_LOCATIONS[@]}"; do
-                echo "  - $location"
-            done
+        if command -v edc >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ edc command already available${RESET}"
+        else
+            mkdir -p ~/.fenix/bin
+            
+            # Create functional edc script
+            cat > ~/.fenix/bin/edc << 'EOF'
+#!/bin/bash
+# edc - Easy Docker Container access script
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo "edc - Easy Docker Container access script"
+    echo "Usage: edc [container_number] or edc for interactive menu"
+    exit 0
+fi
+
+if [ $# -eq 1 ]; then
+    container_name=$(docker ps --format "{{.Names}}" | sed -n "${1}p")
+    if [ -z "$container_name" ]; then
+        echo "Error: Container $1 not found"
+        exit 1
+    fi
+    docker exec -it "$container_name" /bin/bash
+else
+    containers=$(docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" | tail -n +2)
+    if [ -z "$containers" ]; then
+        echo "No running containers found"
+        exit 1
+    fi
+    echo "Available containers:"
+    echo "$containers" | nl -w2 -s'. '
+    read -p "Select container number: " container_num
+    container_name=$(docker ps --format "{{.Names}}" | sed -n "${container_num}p")
+    if [ -n "$container_name" ]; then
+        docker exec -it "$container_name" /bin/bash
+    else
+        echo "Invalid selection"
+    fi
+fi
+EOF
+            chmod +x ~/.fenix/bin/edc
+            echo -e "${GREEN}✅ edc command created at ~/.fenix/bin/edc${RESET}"
         fi
     }
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
@@ -527,40 +542,93 @@ else
         echo -e "${YELLOW}⚠️  Docker not installed. Container features will be limited.${RESET}"
     fi
     
-    # Install edc command
+    # Install edc command - SIMPLIFIED APPROACH
     echo -e "${CYAN}🔧 Installing edc container management command...${RESET}"
     
-    # Create bin directory
-    mkdir -p "$HOME/.fenix/bin"
-    
-    # Try multiple possible locations for edc
-    EDC_LOCATIONS=(
-        "$FENIX_DIR/public/edc"
-        "$HOME/.fenix/public/edc"
-        "$(dirname "$0")/edc"
-        "./edc"
-        "$HOME/fenix/edc"
-        "/home/pi/fenix/edc"
-        "/usr/local/bin/edc"
-    )
-    
-    EDC_INSTALLED=false
-    for edc_location in "${EDC_LOCATIONS[@]}"; do
-        if [ -f "$edc_location" ]; then
-            cp "$edc_location" "$HOME/.fenix/bin/edc"
-            chmod +x "$HOME/.fenix/bin/edc"
-            echo -e "${GREEN}✅ edc command installed from $edc_location to ~/.fenix/bin/edc${RESET}"
-            EDC_INSTALLED=true
-            break
-        fi
-    done
-    
-    if [ "$EDC_INSTALLED" = false ]; then
-        echo -e "${RED}❌ edc source file not found in any of these locations:${RESET}"
-        for location in "${EDC_LOCATIONS[@]}"; do
-            echo "  - $location"
-        done
+    # Check if edc already exists in system PATH
+    if command -v edc >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ edc command already available in system PATH${RESET}"
+        echo -e "${CYAN}   Location: $(which edc)${RESET}"
     else
+        # Create bin directory
+        mkdir -p "$HOME/.fenix/bin"
+        
+        # Create a simple working edc script if we can't find the original
+        cat > "$HOME/.fenix/bin/edc" << 'EOF'
+#!/bin/bash
+# edc - Easy Docker Container access script
+# Usage: edc [container_number]
+
+show_help() {
+    echo "edc - Easy Docker Container access script"
+    echo ""
+    echo "Usage:"
+    echo "  edc                    Show interactive container menu"
+    echo "  edc <number>           Connect directly to container number"
+    echo "  edc --help, -h         Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  edc                    # Interactive mode"
+    echo "  edc 2                  # Connect directly to container #2"
+}
+
+get_containers() {
+    docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}" | tail -n +2
+}
+
+# Handle help arguments
+if [ "$1" = "--help" ] || [ "$1" = "-h" ] || [ "$1" = "help" ]; then
+    show_help
+    exit 0
+fi
+
+if [ $# -eq 1 ]; then
+    # Direct selection mode: edc 2
+    container_num=$1
+    container_name=$(docker ps --format "{{.Names}}" | sed -n "${container_num}p")
+    
+    if [ -z "$container_name" ]; then
+        echo "Error: Container $container_num not found"
+        exit 1
+    fi
+    
+    echo "Connecting to container: $container_name"
+    docker exec -it "$container_name" /bin/bash
+else
+    # Interactive mode: show list and prompt for selection
+    containers=$(get_containers)
+    
+    if [ -z "$containers" ]; then
+        echo "No running containers found"
+        exit 1
+    fi
+    
+    echo "Available containers:"
+    echo "$containers" | nl -w2 -s'. '
+    echo
+    read -p "Select container number (or 'c' to cancel): " container_num
+    
+    # Check for cancel option
+    if [ "$container_num" = "c" ] || [ "$container_num" = "C" ] || [ "$container_num" = "cancel" ]; then
+        echo "Operation cancelled"
+        exit 0
+    fi
+    
+    container_name=$(docker ps --format "{{.Names}}" | sed -n "${container_num}p")
+    
+    if [ -z "$container_name" ]; then
+        echo "Error: Invalid selection"
+        exit 1
+    fi
+    
+    echo "Connecting to container: $container_name"
+    docker exec -it "$container_name" /bin/bash
+fi
+EOF
+        
+        chmod +x "$HOME/.fenix/bin/edc"
+        echo -e "${GREEN}✅ edc command created at ~/.fenix/bin/edc${RESET}"
+        
         # Add to PATH in .bashrc if not already there
         if ! grep -q ".fenix/bin" ~/.bashrc; then
             echo 'export PATH="$HOME/.fenix/bin:$PATH"' >> ~/.bashrc
