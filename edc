@@ -1,0 +1,307 @@
+#!/bin/bash
+# 🔥 FeNix Enhanced Docker Container (edc) - Container Access Tool
+# Part of the FeNix Phoenix System - Quick container access and management
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+PURPLE='\033[0;35m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+# Configuration
+UNIVERSAL_SYSTEM="/home/pi/docker/universal"
+UBUNTU_VM_SYSTEM="/home/pi/docker/ubuntu-vm"
+
+# Show banner
+show_banner() {
+    echo -e "${BOLD}${CYAN}🔥 FeNix Enhanced Docker Container (edc)${RESET}"
+    echo "========================================"
+    echo ""
+}
+
+# Find available container systems
+find_container_systems() {
+    local systems=()
+    
+    # Check for universal system
+    if [ -d "$UNIVERSAL_SYSTEM" ] && [ -f "$UNIVERSAL_SYSTEM/manage.sh" ]; then
+        systems+=("universal")
+    fi
+    
+    # Check for ubuntu-vm system
+    if [ -d "$UBUNTU_VM_SYSTEM" ] && [ -f "$UBUNTU_VM_SYSTEM/manage.sh" ]; then
+        systems+=("ubuntu-vm")
+    fi
+    
+    echo "${systems[@]}"
+}
+
+# Get running containers across all systems
+get_running_containers() {
+    if ! command -v docker >/dev/null 2>&1; then
+        echo "❌ Docker not available"
+        return 1
+    fi
+    
+    local containers
+    containers=$(docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null)
+    
+    if [ -z "$containers" ] || [ "$(echo "$containers" | wc -l)" -eq 1 ]; then
+        return 1
+    fi
+    
+    echo "$containers"
+}
+
+# Interactive container selection
+select_container() {
+    local containers
+    containers=$(docker ps --format "{{.Names}}" 2>/dev/null)
+    
+    if [ -z "$containers" ]; then
+        echo -e "${RED}❌ No running containers found${RESET}"
+        return 1
+    fi
+    
+    echo -e "${CYAN}📦 Running Containers:${RESET}"
+    echo ""
+    
+    # Create numbered list
+    local i=1
+    local container_array=()
+    while IFS= read -r container; do
+        if [ -n "$container" ]; then
+            container_array+=("$container")
+            echo "  $i) $container"
+            ((i++))
+        fi
+    done <<< "$containers"
+    
+    echo ""
+    echo "  0) Exit"
+    echo ""
+    
+    read -p "Select container [0-$((${#container_array[@]})): " choice
+    
+    if [ "$choice" = "0" ]; then
+        echo "Exiting..."
+        return 1
+    fi
+    
+    if [ "$choice" -ge 1 ] && [ "$choice" -le "${#container_array[@]}" ]; then
+        local selected_container="${container_array[$((choice-1))]}"
+        echo -e "${GREEN}🚀 Connecting to: $selected_container${RESET}"
+        echo ""
+        
+        # Try bash first, then sh
+        if docker exec -it "$selected_container" bash 2>/dev/null; then
+            :
+        elif docker exec -it "$selected_container" sh 2>/dev/null; then
+            :
+        else
+            echo -e "${RED}❌ Failed to connect to container: $selected_container${RESET}"
+            return 1
+        fi
+    else
+        echo -e "${RED}❌ Invalid selection${RESET}"
+        return 1
+    fi
+}
+
+# Direct container access by number
+direct_access() {
+    local number="$1"
+    local containers
+    containers=$(docker ps --format "{{.Names}}" 2>/dev/null)
+    
+    if [ -z "$containers" ]; then
+        echo -e "${RED}❌ No running containers found${RESET}"
+        return 1
+    fi
+    
+    local container_array=()
+    while IFS= read -r container; do
+        if [ -n "$container" ]; then
+            container_array+=("$container")
+        fi
+    done <<< "$containers"
+    
+    if [ "$number" -ge 1 ] && [ "$number" -le "${#container_array[@]}" ]; then
+        local selected_container="${container_array[$((number-1))]}"
+        echo -e "${GREEN}🚀 Connecting to: $selected_container${RESET}"
+        echo ""
+        
+        # Try bash first, then sh
+        if docker exec -it "$selected_container" bash 2>/dev/null; then
+            :
+        elif docker exec -it "$selected_container" sh 2>/dev/null; then
+            :
+        else
+            echo -e "${RED}❌ Failed to connect to container: $selected_container${RESET}"
+            return 1
+        fi
+    else
+        echo -e "${RED}❌ Invalid container number: $number${RESET}"
+        echo -e "${CYAN}Available containers: 1-${#container_array[@]}${RESET}"
+        return 1
+    fi
+}
+
+# Show container management options
+show_management_options() {
+    echo -e "${YELLOW}🛠️  Container Management Options:${RESET}"
+    echo ""
+    echo "  create     - Create new container (Universal System)"
+    echo "  list       - List all containers"
+    echo "  logs       - View container logs"
+    echo "  stop       - Stop containers"
+    echo "  restart    - Restart containers"
+    echo "  status     - Show container status"
+    echo "  cleanup    - Clean up unused containers/images"
+    echo ""
+    echo "  ubuntu     - Manage Ubuntu containers"
+    echo "  universal  - Access Universal Container Creator"
+    echo ""
+    echo "  help       - Show this help"
+    echo ""
+}
+
+# Handle management commands
+handle_management() {
+    local command="$1"
+    
+    case "$command" in
+        "create")
+            if [ -d "$UNIVERSAL_SYSTEM" ]; then
+                echo -e "${CYAN}🐳 Launching Universal Container Creator...${RESET}"
+                cd "$UNIVERSAL_SYSTEM" && ./manage.sh start
+            else
+                echo -e "${RED}❌ Universal Container System not found${RESET}"
+            fi
+            ;;
+        "list")
+            echo -e "${CYAN}📦 Container Status:${RESET}"
+            if command -v docker >/dev/null 2>&1; then
+                docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.CreatedAt}}"
+            else
+                echo -e "${RED}❌ Docker not available${RESET}"
+            fi
+            ;;
+        "logs")
+            read -p "Enter container name: " container_name
+            if [ -n "$container_name" ]; then
+                docker logs -f "$container_name"
+            fi
+            ;;
+        "stop")
+            echo "Available running containers:"
+            docker ps --format "{{.Names}}"
+            read -p "Enter container name to stop: " container_name
+            if [ -n "$container_name" ]; then
+                docker stop "$container_name"
+                echo -e "${GREEN}✅ Container stopped: $container_name${RESET}"
+            fi
+            ;;
+        "restart")
+            echo "Available containers:"
+            docker ps -a --format "{{.Names}}"
+            read -p "Enter container name to restart: " container_name
+            if [ -n "$container_name" ]; then
+                docker restart "$container_name"
+                echo -e "${GREEN}✅ Container restarted: $container_name${RESET}"
+            fi
+            ;;
+        "status")
+            echo -e "${CYAN}🔍 System Status:${RESET}"
+            echo ""
+            if command -v docker >/dev/null 2>&1; then
+                echo "Docker version: $(docker --version)"
+                echo "Running containers: $(docker ps -q | wc -l)"
+                echo "Total containers: $(docker ps -a -q | wc -l)"
+                echo "Images: $(docker images -q | wc -l)"
+                echo ""
+                echo "Resource usage:"
+                docker system df 2>/dev/null || echo "Resource info unavailable"
+            else
+                echo -e "${RED}❌ Docker not available${RESET}"
+            fi
+            ;;
+        "cleanup")
+            echo -e "${YELLOW}🧹 Cleaning up Docker resources...${RESET}"
+            if command -v docker >/dev/null 2>&1; then
+                docker system prune -f
+                echo -e "${GREEN}✅ Cleanup complete${RESET}"
+            else
+                echo -e "${RED}❌ Docker not available${RESET}"
+            fi
+            ;;
+        "ubuntu")
+            if [ -d "$UBUNTU_VM_SYSTEM" ]; then
+                echo -e "${CYAN}🐧 Launching Ubuntu Container System...${RESET}"
+                cd "$UBUNTU_VM_SYSTEM" && ./manage.sh
+            else
+                echo -e "${RED}❌ Ubuntu Container System not found${RESET}"
+            fi
+            ;;
+        "universal")
+            if [ -d "$UNIVERSAL_SYSTEM" ]; then
+                echo -e "${CYAN}🚀 Launching Universal Container Creator...${RESET}"
+                cd "$UNIVERSAL_SYSTEM" && ./manage.sh
+            else
+                echo -e "${RED}❌ Universal Container System not found${RESET}"
+            fi
+            ;;
+        "help"|*)
+            show_management_options
+            ;;
+    esac
+}
+
+# Main function
+main() {
+    # Check if Docker is available
+    if ! command -v docker >/dev/null 2>&1; then
+        echo -e "${RED}❌ Docker is not installed or not in PATH${RESET}"
+        echo -e "${CYAN}💡 Install Docker to use container management features${RESET}"
+        return 1
+    fi
+    
+    # Handle arguments
+    if [ $# -eq 0 ]; then
+        # No arguments - show interactive menu
+        show_banner
+        
+        local containers
+        if containers=$(get_running_containers); then
+            echo -e "${containers}"
+            echo ""
+            select_container
+        else
+            echo -e "${YELLOW}⚠️  No running containers found${RESET}"
+            echo ""
+            show_management_options
+            echo ""
+            read -p "Enter command: " command
+            if [ -n "$command" ]; then
+                handle_management "$command"
+            fi
+        fi
+        
+    elif [[ "$1" =~ ^[0-9]+$ ]]; then
+        # Numeric argument - direct container access
+        direct_access "$1"
+        
+    else
+        # Text argument - management command
+        handle_management "$1"
+    fi
+}
+
+# Run main function
+main "$@"

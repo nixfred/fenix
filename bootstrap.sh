@@ -273,20 +273,26 @@ echo ""
 echo -e "${YELLOW}🐳 Phase 4: Container Environment Setup${RESET}"
 echo "======================================="
 
-if command -v docker >/dev/null 2>&1; then
-    echo "🔧 Setting up Docker access..."
-    sudo usermod -aG docker "$USER" 2>/dev/null || true
-    
-    if [ -d "$FENIX_DIR/public/containers" ]; then
-        echo "📦 Installing container management tools..."
-        cd "$FENIX_DIR/public/containers"
-        ./install.sh
-    fi
-    
-    echo -e "${GREEN}✅ Container environment ready!${RESET}"
-    echo -e "${CYAN}💡 Log out and back in for Docker permissions to take effect.${RESET}"
+echo "🐳 Setting up FeNix container management..."
+
+# Install container management system
+if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
+    echo "📦 Installing FeNix container management tools..."
+    cd "$FENIX_DIR/public/containers"
+    ./install.sh
+    echo -e "${GREEN}✅ Container management system installed!${RESET}"
 else
-    echo -e "${YELLOW}⚠️  Docker not available. Skipping container setup.${RESET}"
+    echo -e "${YELLOW}⚠️  Container management system not found${RESET}"
+    
+    # Fallback: basic Docker setup if available
+    if command -v docker >/dev/null 2>&1; then
+        echo "🔧 Setting up basic Docker access..."
+        sudo usermod -aG docker "$USER" 2>/dev/null || true
+        echo -e "${GREEN}✅ Basic Docker setup complete!${RESET}"
+        echo -e "${CYAN}💡 Log out and back in for Docker permissions to take effect.${RESET}"
+    else
+        echo -e "${YELLOW}⚠️  Docker not available. Container features will be limited.${RESET}"
+    fi
 fi
 
 # Finalization
