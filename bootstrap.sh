@@ -321,7 +321,7 @@ setup_ssh_keys() {
     echo "3) Import from GitHub (requires username)"
     echo "4) Skip for now (manual setup later)"
     
-    read -p "Enter choice [1-4]: " ssh_choice
+    read -p "Enter choice [1-4]: " ssh_choice < /dev/tty
     
     case $ssh_choice in
         1)
@@ -336,17 +336,17 @@ setup_ssh_keys() {
             ;;
         2)
             echo "Generating new SSH key..."
-            read -p "Enter your email: " email
+            read -p "Enter your email: " email < /dev/tty
             ssh-keygen -t rsa -b 4096 -C "$email" -f ~/.ssh/id_rsa -N ""
             echo ""
             echo "🔑 Your public key (add this to GitHub):"
             echo "========================================"
             cat ~/.ssh/id_rsa.pub
             echo "========================================"
-            read -p "Press Enter after adding key to GitHub..."
+            read -p "Press Enter after adding key to GitHub..." < /dev/tty
             ;;
         3)
-            read -p "Enter GitHub username: " github_user
+            read -p "Enter GitHub username: " github_user < /dev/tty
             curl -s "https://github.com/$github_user.keys" > ~/.ssh/id_rsa.pub
             echo "⚠️  Public key imported. You'll need the private key manually."
             ;;
