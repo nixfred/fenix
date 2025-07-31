@@ -724,16 +724,20 @@ else
     echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"
 fi
 
-# Instructions for activating the new environment
+# Auto-activate the new FeNix environment
 echo ""
-echo -e "${BOLD}${CYAN}🔄 To activate your new FeNix environment:${RESET}"
+echo -e "${BOLD}${CYAN}🔄 Activating your new FeNix environment...${RESET}"
 echo ""
-echo -e "${BOLD}${YELLOW}  source ~/.bashrc${RESET}"
-echo ""
-echo -e "${CYAN}Then test these commands:${RESET}"
+echo -e "${CYAN}Available commands after activation:${RESET}"
 echo "• sb - Reload shell configuration"
 echo "• j proj - Jump to projects directory"  
 echo "• neo - System information banner"
 echo "• edc - Container management (if Docker available)"
 echo "• pp - Smart SSH between hosts"
 echo ""
+echo -e "${BOLD}${GREEN}🚀 Starting new shell with FeNix environment...${RESET}"
+echo ""
+
+# Start a new interactive shell with the updated environment
+# This replaces the current shell with a fresh one that has all the new configs loaded
+exec bash --login
