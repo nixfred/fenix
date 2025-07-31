@@ -113,7 +113,8 @@ else
     echo "Available containers:"
     echo "$containers" | nl -w2 -s'. '
     echo
-    read -p "Select container number (or 'c' to cancel): " container_num
+    echo "Enter container number or 'c' to cancel"
+    read -p "Select container number: " container_num
     
     # Check for cancel option FIRST
     case "$container_num" in
