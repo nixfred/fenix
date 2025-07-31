@@ -480,9 +480,12 @@ if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
         # Try multiple possible locations for edc
         EDC_LOCATIONS=(
             "$FENIX_DIR/public/edc"
+            "$HOME/.fenix/public/edc"
             "$(dirname "$0")/edc"
             "./edc"
             "$HOME/fenix/edc"
+            "/home/pi/fenix/edc"
+            "/usr/local/bin/edc"
         )
         
         EDC_INSTALLED=false
@@ -533,9 +536,12 @@ else
     # Try multiple possible locations for edc
     EDC_LOCATIONS=(
         "$FENIX_DIR/public/edc"
+        "$HOME/.fenix/public/edc"
         "$(dirname "$0")/edc"
         "./edc"
         "$HOME/fenix/edc"
+        "/home/pi/fenix/edc"
+        "/usr/local/bin/edc"
     )
     
     EDC_INSTALLED=false
@@ -724,20 +730,17 @@ else
     echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"
 fi
 
-# Auto-activate the new FeNix environment
+# Instructions for activating the new environment
 echo ""
-echo -e "${BOLD}${CYAN}🔄 Activating your new FeNix environment...${RESET}"
+echo -e "${BOLD}${CYAN}🔄 To activate your new FeNix environment, run:${RESET}"
 echo ""
-echo -e "${CYAN}Available commands after activation:${RESET}"
+echo -e "${BOLD}${YELLOW}  exec bash${RESET}"
+echo ""
+echo -e "${CYAN}This will start a fresh shell with all FeNix commands available:${RESET}"
 echo "• sb - Reload shell configuration"
 echo "• j proj - Jump to projects directory"  
 echo "• neo - System information banner"
 echo "• edc - Container management (if Docker available)"
 echo "• pp - Smart SSH between hosts"
 echo ""
-echo -e "${BOLD}${GREEN}🚀 Starting new shell with FeNix environment...${RESET}"
-echo ""
-
-# Start a new interactive shell with the updated environment
-# This replaces the current shell with a fresh one that has all the new configs loaded
-exec bash --login
+echo -e "${BOLD}${GREEN}🎉 FeNix is ready! Run 'exec bash' to activate! 🎉${RESET}"
