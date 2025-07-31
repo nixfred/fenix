@@ -75,7 +75,7 @@ RESET='\033[0m'
 
 # Detect if running inside a container
 RUNNING_IN_CONTAINER=false
-if [ -f /.dockerenv ] || [ -f /proc/1/cgroup ] && grep -q docker /proc/1/cgroup 2>/dev/null; then
+if [ -f /.dockerenv ] || ([ -f /proc/1/cgroup ] && grep -q docker /proc/1/cgroup 2>/dev/null); then
     RUNNING_IN_CONTAINER=true
 fi
 
