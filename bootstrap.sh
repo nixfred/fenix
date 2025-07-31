@@ -73,11 +73,33 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
+# Detect if running inside a container
+RUNNING_IN_CONTAINER=false
+if [ -f /.dockerenv ] || [ -f /proc/1/cgroup ] && grep -q docker /proc/1/cgroup 2>/dev/null; then
+    RUNNING_IN_CONTAINER=true
+fi
+
+# Create container-safe sudo function
+safe_sudo() {
+    if [ "$RUNNING_IN_CONTAINER" = true ] || [ "$EUID" -eq 0 ]; then
+        # In container or already root, run command directly
+        "$@"
+    else
+        # Normal system, use sudo
+        sudo "$@"
+    fi
+}
+
 echo -e "${BOLD}${CYAN}"
 echo "🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"
-echo "              FeNix RESURRECTION                "
-echo "         Digital Life as Code (DLaC)           "
-echo "   From Zero to Hero in Under 10 Minutes       "
+if [ "$RUNNING_IN_CONTAINER" = true ]; then
+    echo "       FeNix CONTAINER CONFIGURATION         "
+    echo "     Adapting for Container Environment      "
+else
+    echo "              FeNix RESURRECTION                "
+    echo "         Digital Life as Code (DLaC)           "
+    echo "   From Zero to Hero in Under 10 Minutes       "
+fi
 echo "🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"
 
 # Machine Identity Detection
@@ -171,7 +193,7 @@ else
     # Install essential tools
     if command -v apt >/dev/null 2>&1; then
         echo "🔧 Installing FeNix essential packages..."
-        sudo apt update && sudo apt install -y \
+        safe_sudo apt update && safe_sudo apt install -y \
             git curl wget nano htop docker.io \
             neofetch screenfetch bat tree colordiff \
             unzip p7zip-full unrar-free \
@@ -182,7 +204,7 @@ else
             timeshift
     elif command -v dnf >/dev/null 2>&1; then
         echo "🔧 Installing FeNix essential packages (Fedora)..."
-        sudo dnf install -y \
+        safe_sudo dnf install -y \
             git curl wget nano htop docker \
             neofetch screenfetch bat tree colordiff \
             unzip p7zip unrar \
@@ -193,7 +215,7 @@ else
             timeshift
     elif command -v pacman >/dev/null 2>&1; then
         echo "🔧 Installing FeNix essential packages (Arch)..."
-        sudo pacman -Sy --noconfirm \
+        safe_sudo pacman -Sy --noconfirm \
             git curl wget nano htop docker \
             neofetch screenfetch bat tree colordiff \
             unzip p7zip unrar \
@@ -404,8 +426,8 @@ if [ "$SKIP_SSH" = false ] && setup_ssh_keys; then
             # Change hostname to ron if not already
             if [ "$CURRENT_HOSTNAME" != "ron" ]; then
                 echo -e "${YELLOW}🏷️  Changing hostname to 'ron'...${RESET}"
-                echo "ron" | sudo tee /etc/hostname >/dev/null
-                sudo sed -i "s/$CURRENT_HOSTNAME/ron/g" /etc/hosts 2>/dev/null || true
+                echo "ron" | safe_sudo tee /etc/hostname >/dev/null
+                safe_sudo sed -i "s/$CURRENT_HOSTNAME/ron/g" /etc/hosts 2>/dev/null || true
                 echo -e "${CYAN}💡 Hostname will be 'ron' after reboot${RESET}"
             fi
             
@@ -484,13 +506,18 @@ if [ "$WORK_MACHINE" = true ]; then
     echo -e "${CYAN}📋 No Docker tools or system modifications will be made${RESET}"
 else
     echo ""
-    echo -e "${YELLOW}🐳 Phase 4: Container Environment Setup${RESET}"
-    echo "======================================="
+    if [ "$RUNNING_IN_CONTAINER" = true ]; then
+        echo -e "${YELLOW}🐳 Phase 4: Container Environment Skipped${RESET}"
+        echo "==========================================="
+        echo -e "${CYAN}💡 Running inside container - skipping container management setup${RESET}"
+    else
+        echo -e "${YELLOW}🐳 Phase 4: Container Environment Setup${RESET}"
+        echo "======================================="
+        echo "🐳 Setting up FeNix container management..."
+    fi
 
-    echo "🐳 Setting up FeNix container management..."
-
-# Install container management system
-if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
+# Install container management system (only if not in container)
+if [ "$RUNNING_IN_CONTAINER" = false ] && [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
     echo "📦 Installing FeNix container management tools..."
     cd "$FENIX_DIR/public/containers"
     ./install.sh 2>/dev/null || {
@@ -544,7 +571,7 @@ EOF
         fi
     }
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
-else
+elif [ "$RUNNING_IN_CONTAINER" = false ]; then
     echo -e "${BOLD}${CYAN}🐳 FeNix Container Management Setup${RESET}"
     echo "==================================="
     
@@ -557,7 +584,7 @@ else
             echo -e "${GREEN}✅ User already in docker group${RESET}"
         else
             echo "🔧 Adding user to docker group..."
-            sudo usermod -aG docker "$USER"
+            safe_sudo usermod -aG docker "$USER"
             echo -e "${YELLOW}💡 Log out and back in for Docker permissions to take effect${RESET}"
         fi
     else
@@ -568,7 +595,7 @@ else
     echo -e "${CYAN}🔧 Installing/updating edc container management command...${RESET}"
     
     # Always update edc to latest version in /usr/local/bin
-    sudo tee /usr/local/bin/edc > /dev/null << 'EOF'
+    safe_sudo tee /usr/local/bin/edc > /dev/null << 'EOF'
 #!/bin/bash
 # edc - Easy Docker Container access script
 # Usage: edc [container_number]
@@ -651,7 +678,7 @@ else
 fi
 EOF
     
-    sudo chmod +x /usr/local/bin/edc
+    safe_sudo chmod +x /usr/local/bin/edc
     echo -e "${GREEN}✅ edc command installed/updated at /usr/local/bin/edc${RESET}"
     
     # Check for existing container systems
@@ -724,16 +751,20 @@ EOF
     echo -e "${YELLOW}Note: If Docker permissions were just set, log out and back in for them to take effect.${RESET}"
     
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
+else
+    # Running in container - skip Docker setup
+    echo -e "${CYAN}💡 Running inside container - skipping Docker management setup${RESET}"
+    echo -e "${CYAN}📦 Basic FeNix configuration will be applied${RESET}"
 fi
 
 # Install Ubuntu container system wrappers (skip for work machines)
-if [ "$WORK_MACHINE" = false ]; then
+if [ "$WORK_MACHINE" = false ] && [ "$RUNNING_IN_CONTAINER" = false ]; then
     echo ""
     echo -e "${CYAN}🐧 Installing Ubuntu container system wrappers...${RESET}"
     
     # Install start command wrapper
     echo "📦 Installing system 'start' command wrapper..."
-    sudo tee /usr/local/bin/start > /dev/null << 'EOF'
+    safe_sudo tee /usr/local/bin/start > /dev/null << 'EOF'
 #!/bin/bash
 # FeNix Ubuntu Container Start - System Wrapper
 # Redirects to the FeNix ubuntu-start command
@@ -750,11 +781,11 @@ else
     exit 1
 fi
 EOF
-    sudo chmod +x /usr/local/bin/start 2>/dev/null || echo "⚠️ Could not make start command executable"
+    safe_sudo chmod +x /usr/local/bin/start 2>/dev/null || echo "⚠️ Could not make start command executable"
     
     # Install destroy command wrapper
     echo "📦 Installing system 'destroy' command wrapper..."
-    sudo tee /usr/local/bin/destroy > /dev/null << 'EOF'
+    safe_sudo tee /usr/local/bin/destroy > /dev/null << 'EOF'
 #!/bin/bash
 # FeNix Ubuntu Container Destroy - System Wrapper
 # Redirects to the FeNix ubuntu-destroy command
@@ -771,28 +802,28 @@ else
     exit 1
 fi
 EOF
-    sudo chmod +x /usr/local/bin/destroy 2>/dev/null || echo "⚠️ Could not make destroy command executable"
+    safe_sudo chmod +x /usr/local/bin/destroy 2>/dev/null || echo "⚠️ Could not make destroy command executable"
     
     echo -e "${GREEN}✅ Ubuntu container system wrappers installed!${RESET}"
     echo -e "${CYAN}💡 Usage: 'start' and 'destroy' commands now available system-wide${RESET}"
 fi
 fi  # End of work machine check
 
-# Install ts (timeshift) command wrapper (skip for work machines)
-if [ "$WORK_MACHINE" = false ] && command -v timeshift >/dev/null 2>&1; then
+# Install ts (timeshift) command wrapper (skip for work machines and containers)
+if [ "$WORK_MACHINE" = false ] && [ "$RUNNING_IN_CONTAINER" = false ] && command -v timeshift >/dev/null 2>&1; then
     echo "📦 Installing FeNix ts (timeshift) command wrapper..."
-    sudo tee /usr/local/bin/ts > /dev/null << 'EOF'
+    safe_sudo tee /usr/local/bin/ts > /dev/null << 'EOF'
 #!/bin/bash
 # FeNix ts - Timeshift wrapper for easy system snapshots
-sudo timeshift "$@"
+timeshift "$@"
 EOF
-    sudo chmod +x /usr/local/bin/ts 2>/dev/null || {
+    safe_sudo chmod +x /usr/local/bin/ts 2>/dev/null || {
         # If sudo fails, try user bin directory
         mkdir -p "$HOME/.local/bin"
         tee "$HOME/.local/bin/ts" > /dev/null << 'EOF'
 #!/bin/bash
 # FeNix ts - Timeshift wrapper for easy system snapshots
-sudo timeshift "$@"
+timeshift "$@"
 EOF
         chmod +x "$HOME/.local/bin/ts"
         # Add to PATH if not already there
@@ -812,7 +843,7 @@ if [ -z "$(find $FENIX_DIR/public -name "edc" -o -name "manage.sh" 2>/dev/null)"
     # Fallback: basic Docker setup if available
     if command -v docker >/dev/null 2>&1; then
         echo "🔧 Setting up basic Docker access..."
-        sudo usermod -aG docker "$USER" 2>/dev/null || true
+        safe_sudo usermod -aG docker "$USER" 2>/dev/null || true
         echo -e "${GREEN}✅ Basic Docker setup complete!${RESET}"
         echo -e "${CYAN}💡 Log out and back in for Docker permissions to take effect.${RESET}"
     else
