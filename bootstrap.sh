@@ -831,7 +831,7 @@ if [ -f ~/.bashrc ]; then
     # Test that edc is working
     if command -v edc >/dev/null 2>&1; then
         echo -e "${GREEN}✅ edc command is ready!${RESET}"
-        edc --help | head -3
+        echo -e "${CYAN}   Try: edc --help or edc (for interactive mode)${RESET}"
     else
         echo -e "${YELLOW}⚠️  edc not yet in PATH - run 'exec bash' to refresh${RESET}"
     fi
