@@ -739,7 +739,7 @@ if [ "$WORK_MACHINE" = false ]; then
 # Redirects to the FeNix ubuntu-start command
 
 # Check if FeNix dotfiles ubuntu-start exists
-FENIX_START="/home/pi/fenix-dotfiles/bin/ubuntu-start"
+FENIX_START="$HOME/.fenix/dotfiles/bin/ubuntu-start"
 
 if [ -f "$FENIX_START" ]; then
     # Execute the FeNix version
@@ -760,7 +760,7 @@ EOF
 # Redirects to the FeNix ubuntu-destroy command
 
 # Check if FeNix dotfiles ubuntu-destroy exists
-FENIX_DESTROY="/home/pi/fenix-dotfiles/bin/ubuntu-destroy"
+FENIX_DESTROY="$HOME/.fenix/dotfiles/bin/ubuntu-destroy"
 
 if [ -f "$FENIX_DESTROY" ]; then
     # Execute the FeNix version
