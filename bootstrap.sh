@@ -468,21 +468,118 @@ if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
         cd "$FENIX_DIR"
     }
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
-elif [ -f "$FENIX_DIR/public/edc" ]; then
-    echo "📦 Installing FeNix edc command directly..."
-    chmod +x "$FENIX_DIR/public/edc"
-    sudo cp "$FENIX_DIR/public/edc" /usr/local/bin/edc 2>/dev/null || {
-        # If sudo fails, try user bin directory
-        mkdir -p "$HOME/.local/bin"
-        cp "$FENIX_DIR/public/edc" "$HOME/.local/bin/edc"
-        # Add to PATH if not already there
-        if ! grep -q ".local/bin" ~/.bashrc; then
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-        fi
-    }
-    echo -e "${GREEN}✅ FeNix edc command installed!${RESET}"
 else
-    echo -e "${YELLOW}⚠️  Container management system not found${RESET}"
+    echo -e "${BOLD}${CYAN}🐳 FeNix Container Management Setup${RESET}"
+    echo "==================================="
+    
+    # Check Docker availability
+    if command -v docker >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ Docker is already available${RESET}"
+        
+        # Add user to docker group if not already
+        if groups $USER | grep -q docker; then
+            echo -e "${GREEN}✅ User already in docker group${RESET}"
+        else
+            echo "🔧 Adding user to docker group..."
+            sudo usermod -aG docker "$USER"
+            echo -e "${YELLOW}💡 Log out and back in for Docker permissions to take effect${RESET}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Docker not installed. Container features will be limited.${RESET}"
+    fi
+    
+    # Install edc command
+    if [ -f "$FENIX_DIR/public/edc" ]; then
+        echo -e "${GREEN}✅ edc source file found: $FENIX_DIR/public/edc${RESET}"
+        
+        # Create bin directory
+        mkdir -p "$HOME/.fenix/bin"
+        
+        # Copy and make executable
+        cp "$FENIX_DIR/public/edc" "$HOME/.fenix/bin/edc"
+        chmod +x "$HOME/.fenix/bin/edc"
+        
+        # Add to PATH in .bashrc if not already there
+        if ! grep -q ".fenix/bin" ~/.bashrc; then
+            echo 'export PATH="$HOME/.fenix/bin:$PATH"' >> ~/.bashrc
+            echo -e "${GREEN}✅ Added ~/.fenix/bin to PATH in .bashrc${RESET}"
+        fi
+        
+        echo -e "${GREEN}✅ edc command installed to ~/.fenix/bin/edc${RESET}"
+    else
+        echo -e "${RED}❌ edc source file not found: $FENIX_DIR/public/edc${RESET}"
+    fi
+    
+    # Check for existing container systems
+    echo ""
+    echo -e "${CYAN}🔍 Checking for existing container systems...${RESET}"
+    
+    local container_systems_found=false
+    
+    # Check common locations for container systems
+    local container_dirs=("$HOME/docker/universal" "$HOME/docker/ubuntu-vm" "$HOME/projects/docker" "$HOME/containers")
+    
+    for dir in "${container_dirs[@]}"; do
+        if [ -d "$dir" ]; then
+            echo -e "${GREEN}✅ Found container system: $dir${RESET}"
+            container_systems_found=true
+        fi
+    done
+    
+    if [ "$container_systems_found" = false ]; then
+        echo -e "${YELLOW}⚠️  Universal Container Creator not found at $HOME/docker/universal${RESET}"
+        echo -e "${YELLOW}⚠️  Ubuntu Container System not found at $HOME/docker/ubuntu-vm${RESET}"
+    fi
+    
+    # Test Docker functionality
+    echo ""
+    echo -e "${CYAN}🧪 Testing Docker functionality...${RESET}"
+    
+    if command -v docker >/dev/null 2>&1; then
+        if docker info >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ Docker daemon is running${RESET}"
+            
+            if docker run --rm hello-world >/dev/null 2>&1; then
+                echo -e "${GREEN}✅ Docker basic functionality works${RESET}"
+            else
+                echo -e "${YELLOW}⚠️  Docker run test failed (may need group permissions)${RESET}"
+            fi
+        else
+            echo -e "${YELLOW}⚠️  Docker daemon not running or permission denied${RESET}"
+        fi
+    else
+        echo -e "${RED}❌ Docker command not available${RESET}"
+    fi
+    
+    # Check edc command availability
+    echo ""
+    echo -e "${CYAN}🔧 Checking edc command availability...${RESET}"
+    
+    if [ -f "$HOME/.fenix/bin/edc" ]; then
+        if [[ ":$PATH:" == *":$HOME/.fenix/bin:"* ]]; then
+            echo -e "${GREEN}✅ edc command should be available after sourcing .bashrc${RESET}"
+        else
+            echo -e "${YELLOW}⚠️  edc not in PATH. Make sure ~/.fenix/bin is in your PATH${RESET}"
+            echo -e "${CYAN}💡 Add this to your .bashrc: export PATH=\"\$HOME/.fenix/bin:\$PATH\"${RESET}"
+        fi
+    else
+        echo -e "${RED}❌ edc command not installed${RESET}"
+    fi
+    
+    echo ""
+    echo -e "${BOLD}${GREEN}🎉 FeNix Container Management Setup Complete!${RESET}"
+    echo ""
+    echo -e "${CYAN}Usage:${RESET}"
+    echo "  edc                    # Interactive container menu"
+    echo "  edc 1                  # Direct access to container #1"
+    echo "  edc create             # Create new container"
+    echo "  edc list               # List all containers"
+    echo "  edc universal          # Universal Container Creator"
+    echo "  edc ubuntu             # Ubuntu Container System"
+    echo ""
+    echo -e "${YELLOW}Note: If Docker permissions were just set, log out and back in for them to take effect.${RESET}"
+    
+    echo -e "${GREEN}✅ Container management system installed!${RESET}"
 fi
 
 # Install ts (timeshift) command wrapper

@@ -14,9 +14,31 @@ PURPLE='\033[0;35m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-# Configuration
-UNIVERSAL_SYSTEM="/home/pi/docker/universal"
-UBUNTU_VM_SYSTEM="/home/pi/docker/ubuntu-vm"
+# Dynamic Configuration - Find container systems
+find_docker_systems() {
+    local search_dirs=("$HOME/docker" "$HOME/projects" "$HOME/containers" "$HOME/dev" "$HOME/Development")
+    
+    # Find Universal Container Creator
+    UNIVERSAL_SYSTEM=""
+    for base_dir in "${search_dirs[@]}"; do
+        if [ -d "$base_dir/universal" ] && [ -f "$base_dir/universal/manage.sh" ]; then
+            UNIVERSAL_SYSTEM="$base_dir/universal"
+            break
+        fi
+    done
+    
+    # Find Ubuntu VM System
+    UBUNTU_VM_SYSTEM=""
+    for base_dir in "${search_dirs[@]}"; do
+        if [ -d "$base_dir/ubuntu-vm" ] && [ -f "$base_dir/ubuntu-vm/manage.sh" ]; then
+            UBUNTU_VM_SYSTEM="$base_dir/ubuntu-vm"
+            break
+        fi
+    done
+}
+
+# Initialize dynamic configuration
+find_docker_systems
 
 # Show banner
 show_banner() {
