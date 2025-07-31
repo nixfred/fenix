@@ -838,10 +838,14 @@ if [ -f ~/.bashrc ]; then
     echo -e "${BOLD}${GREEN}✅ Environment loaded! Commands are now available.${RESET}"
     echo ""
     
-    # Just check if edc exists without calling it
+    # Force refresh the edc command to ensure latest version
     if command -v edc >/dev/null 2>&1; then
         echo -e "${GREEN}✅ edc command is ready at $(which edc)${RESET}"
         echo -e "${CYAN}   Try: edc --help or edc (for interactive mode)${RESET}"
+        
+        # Clear shell command cache to ensure updated edc is used
+        hash -r 2>/dev/null || true
+        echo -e "${CYAN}   Command cache refreshed${RESET}"
     else
         echo -e "${YELLOW}⚠️  edc not yet in PATH - run 'exec bash' to refresh${RESET}"
     fi
