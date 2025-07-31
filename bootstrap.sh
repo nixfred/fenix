@@ -227,8 +227,10 @@ if [ "$dotfiles_available" = true ]; then
     echo "🏠 Installing FeNix dotfiles..."
     cd dotfiles
     if [ -f "./install.sh" ]; then
-        ./install.sh --stage1 2>/dev/null || {
+        ./install.sh --stage1 || {
             echo "⚠️  Dotfiles install script failed, continuing with basic setup..."
+            echo "⚠️  Error details: Check if .bashrc exists in dotfiles directory"
+            ls -la . | head -10
             cd "$FENIX_DIR"
         }
     else

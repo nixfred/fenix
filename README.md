@@ -172,10 +172,8 @@ pp                      # Smart SSH (pi5 ↔ ron, others → pi5)
 edc                     # Interactive container menu
 edc 2                   # Direct access to container #2
 
-# Sync operations
-fenix sync              # Sync changes across hosts
-fenix backup            # Create system backup
-fenix status            # System health check
+# System information
+neo                     # System health check and info banner
 ```
 
 ### 🧪 **Testing New Configurations**
@@ -362,9 +360,9 @@ edc                             # Interactive menu
 edc 2                           # Direct access to container #2
 
 # Sync operations  
-fenix sync                      # Sync changes across hosts
-fenix backup                    # Create system backup
-fenix status                    # System health check
+# fenix sync                    # Sync changes across hosts (coming soon)
+# fenix backup                  # Create system backup (coming soon)
+neo                             # System health check
 ```
 
 ---
