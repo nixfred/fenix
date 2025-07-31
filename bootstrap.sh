@@ -186,13 +186,91 @@ echo "📥 Cloning FeNix public repositories..."
 mkdir -p "$FENIX_DIR"
 cd "$FENIX_DIR"
 
-git clone https://github.com/nixfred/fenix.git public
-git clone https://github.com/nixfred/fenix-dotfiles.git dotfiles
+# Clone or update public repository
+if [ -d "public" ]; then
+    echo "🔄 Updating existing FeNix public repository..."
+    cd public && git pull origin main && cd "$FENIX_DIR"
+else
+    git clone https://github.com/nixfred/fenix.git public
+fi
 
-# Install public dotfiles
-echo "🏠 Installing public dotfiles..."
-cd dotfiles
-./install.sh --stage1
+# Try to clone dotfiles repository (may not exist or be private)
+if [ -d "dotfiles" ]; then
+    echo "🔄 Updating existing FeNix dotfiles..."
+    cd dotfiles && git pull origin main 2>/dev/null && cd "$FENIX_DIR"
+    dotfiles_available=true
+elif git clone https://github.com/nixfred/fenix-dotfiles.git dotfiles 2>/dev/null; then
+    dotfiles_available=true
+else
+    dotfiles_available=false
+fi
+
+if [ "$dotfiles_available" = true ]; then
+    echo "🏠 Installing FeNix dotfiles..."
+    cd dotfiles
+    if [ -f "./install.sh" ]; then
+        ./install.sh --stage1 2>/dev/null || {
+            echo "⚠️  Dotfiles install script failed, continuing with basic setup..."
+            cd "$FENIX_DIR"
+        }
+    else
+        echo "⚠️  Dotfiles install script not found, continuing with basic setup..."
+        cd "$FENIX_DIR"
+    fi
+else
+    echo "⚠️  FeNix dotfiles repository not accessible, creating basic shell setup..."
+    mkdir -p dotfiles
+    cd dotfiles
+    
+    # Create basic .bashrc enhancement
+    cat > .bashrc_fenix << 'EOF'
+# FeNix Basic Shell Enhancement
+export FENIX_DIR="$HOME/.fenix"
+
+# Dynamic path detection for common project directories
+j() {
+    local target_dirs=("$HOME/projects" "$HOME/Projects" "$HOME/dev" "$HOME/Development" "$HOME/code" "$HOME/src")
+    case "$1" in
+        "proj"|"project"|"projects")
+            for dir in "${target_dirs[@]}"; do
+                if [ -d "$dir" ]; then
+                    cd "$dir" && return 0
+                fi
+            done
+            echo "No projects directory found. Creating $HOME/projects"
+            mkdir -p "$HOME/projects" && cd "$HOME/projects"
+            ;;
+        *)
+            echo "Usage: j proj - Jump to projects directory"
+            ;;
+    esac
+}
+
+# Basic system info
+neo() {
+    echo "=== FeNix System Info ==="
+    echo "Host: $(hostname)"
+    echo "User: $(whoami)"
+    echo "Date: $(date)"
+    echo "Uptime: $(uptime -p 2>/dev/null || uptime)"
+    echo "=========================="
+}
+
+echo "🔥 FeNix shell environment loaded!"
+EOF
+    
+    # Install the basic .bashrc enhancement
+    if ! grep -q "FeNix Basic Shell Enhancement" "$HOME/.bashrc" 2>/dev/null; then
+        echo "" >> "$HOME/.bashrc"
+        echo "# FeNix Basic Shell Enhancement" >> "$HOME/.bashrc"
+        echo "source $FENIX_DIR/dotfiles/.bashrc_fenix" >> "$HOME/.bashrc"
+        echo "✅ Added FeNix shell enhancements to ~/.bashrc"
+    else
+        echo "✅ FeNix shell enhancements already installed in ~/.bashrc"
+    fi
+    
+    cd "$FENIX_DIR"
+fi
 
 echo -e "${GREEN}✅ Phase 1 Complete: Basic system ready!${RESET}"
 
