@@ -583,6 +583,7 @@ else
     
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
 fi
+fi  # End of work machine check
 
 # Install ts (timeshift) command wrapper (skip for work machines)
 if [ "$WORK_MACHINE" = false ] && command -v timeshift >/dev/null 2>&1; then
