@@ -352,6 +352,12 @@ setup_ssh_keys() {
             ;;
         4)
             echo "⏭️  Skipping SSH setup. Run 'fenix setup-ssh' later."
+            SKIP_SSH=true
+            return 0
+            ;;
+        *)
+            echo "Invalid choice. Skipping SSH setup."
+            SKIP_SSH=true
             return 0
             ;;
     esac
@@ -824,13 +830,16 @@ echo ""
 if [ -f ~/.bashrc ]; then
     echo -e "${BOLD}${GREEN}🔄 Loading environment...${RESET}"
     export FENIX_NO_BANNER=1  # Prevent duplicate banner
-    source ~/.bashrc
+    
+    # Source bashrc quietly to avoid any issues
+    source ~/.bashrc 2>/dev/null || source ~/.bashrc
+    
     echo -e "${BOLD}${GREEN}✅ Environment loaded! Commands are now available.${RESET}"
     echo ""
     
-    # Test that edc is working
+    # Just check if edc exists without calling it
     if command -v edc >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ edc command is ready!${RESET}"
+        echo -e "${GREEN}✅ edc command is ready at $(which edc)${RESET}"
         echo -e "${CYAN}   Try: edc --help or edc (for interactive mode)${RESET}"
     else
         echo -e "${YELLOW}⚠️  edc not yet in PATH - run 'exec bash' to refresh${RESET}"
