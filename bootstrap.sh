@@ -391,7 +391,15 @@ if [ "$SKIP_SSH" = false ] && setup_ssh_keys; then
             echo -e "${GREEN}🏠 MAIN WORKSTATION SETUP${RESET}"
             
             # Full identity transfer for main workstation
-            ./install.sh --main-workstation 2>/dev/null || ./install.sh --stage3
+            if [ -f "./install.sh" ]; then
+                ./install.sh --main-workstation 2>/dev/null || ./install.sh --stage3 2>/dev/null || echo "⚠️  Private install script not available, using basic setup"
+            else
+                echo "⚠️  Private install script not found, using basic main workstation setup"
+                # Create basic main workstation aliases
+                echo "alias checkremotes='echo \"Checking remote FeNix hosts...\"; for host in pi5 laptop; do echo -n \"$host: \"; ssh -o ConnectTimeout=5 \$host \"hostname && uptime\" 2>/dev/null || echo \"offline\"; done'" >> ~/.bash_aliases 2>/dev/null || true
+                echo "alias deployeverywhere='echo \"Deploying to all FeNix hosts...\"; docker-compose up -d && ssh pi5 \"cd ~/projects && docker-compose up -d\" 2>/dev/null'" >> ~/.bash_aliases 2>/dev/null || true
+                echo "alias synctoremotes='echo \"Syncing projects to remotes...\"; rsync -av ~/projects/ pi5:~/projects/ 2>/dev/null || echo \"pi5 not reachable\"'" >> ~/.bash_aliases 2>/dev/null || true
+            fi
             
             # Change hostname to ron if not already
             if [ "$CURRENT_HOSTNAME" != "ron" ]; then
@@ -418,7 +426,15 @@ if [ "$SKIP_SSH" = false ] && setup_ssh_keys; then
             echo -e "${CYAN}🖥️  REMOTE ENVIRONMENT SETUP${RESET}"
             
             # Remote environment configuration
-            ./install.sh --remote-environment 2>/dev/null || ./install.sh --stage3
+            if [ -f "./install.sh" ]; then
+                ./install.sh --remote-environment 2>/dev/null || ./install.sh --stage3 2>/dev/null || echo "⚠️  Private install script not available, using basic setup"
+            else
+                echo "⚠️  Private install script not found, using basic remote environment setup"
+                # Create basic remote environment aliases
+                echo "alias gohome='ssh ron'" >> ~/.bash_aliases 2>/dev/null || true
+                echo "alias syncfromhome='echo \"Syncing from ron...\"; rsync -av ron:~/projects/ ~/projects/ 2>/dev/null || echo \"ron not reachable\"'" >> ~/.bash_aliases 2>/dev/null || true
+                echo "alias homecheck='ssh -o ConnectTimeout=5 ron \"hostname && uptime\" 2>/dev/null || echo \"ron offline\"'" >> ~/.bash_aliases 2>/dev/null || true
+            fi
             
             # Keep current hostname
             echo -e "${CYAN}🏷️  Keeping hostname: $CURRENT_HOSTNAME${RESET}"
