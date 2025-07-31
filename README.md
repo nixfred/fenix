@@ -8,6 +8,31 @@
 
 > *"If my machine dies, I'm back to 100% productivity in under 10 minutes"*
 
+## 🚀 **TLDR - Quick Start**
+
+**Just want to install FeNix? Run this ONE command:**
+
+```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+```
+
+**That's it!** The installer will guide you through everything else. ✨
+
+**After installation:**
+```bash
+source ~/.bashrc    # Activate FeNix
+j proj             # Jump to projects 
+neo                # System info
+edc                # Container management
+```
+
+**For work machines (no system changes):**
+```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
+```
+
+---
+
 **THIS IS YOUR COMPLETE RUNBOOK** - Everything you need to deploy, manage, and maintain the FeNix system. No external docs needed!
 
 ## 🎯 What is FeNix?
