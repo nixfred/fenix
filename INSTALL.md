@@ -41,6 +41,12 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 ```
 
+#### Work Machine (Ultra Minimal - Shell Only)
+```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
+```
+**Perfect for corporate/work environments where you can't install packages or modify system settings.**
+
 #### Existing System with Custom Configurations
 ⚠️ **WARNING**: This will modify your ~/.bashrc and may overwrite existing shell configurations
 ```bash
@@ -195,6 +201,9 @@ FENIX_MACHINE_TYPE="remote" curl -s https://raw.githubusercontent.com/nixfred/fe
 # Public-only installation (no SSH/private configs)
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 
+# Work machine installation (ultra minimal, no system changes)
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
+
 # Remote environment installation  
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --remote-environment
 
@@ -209,6 +218,57 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
 # Show all available options
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --help
+```
+
+---
+
+## 💼 Work Machine Installation (Corporate/Restricted Environments)
+
+### Perfect for Corporate Environments
+The `--work-machine` option is designed for restricted corporate environments where:
+- ❌ You can't install system packages
+- ❌ You don't have sudo access for system modifications
+- ❌ Docker/containers are not allowed
+- ❌ IT policies restrict system changes
+- ✅ You want productivity enhancements without "messing with the work machine"
+
+### Work Machine Features
+```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
+```
+
+**What it installs:**
+- ✅ Dynamic shell environment with intelligent path detection
+- ✅ Productivity aliases and functions (`j proj`, `neo`, etc.)
+- ✅ Enhanced `.bashrc` with multi-host awareness
+- ✅ Basic FeNix directory structure in `~/.fenix/`
+
+**What it DOESN'T do:**
+- ❌ No `sudo` operations
+- ❌ No system package installation
+- ❌ No Docker or container management
+- ❌ No system configuration changes
+- ❌ No timeshift or backup tools
+- ❌ No SSH key management (unless explicitly configured later)
+
+### Work Machine vs Other Options
+
+| Feature | Work Machine | Public Only | Full FeNix |
+|---------|-------------|-------------|------------|
+| **Sudo Required** | ❌ | ✅ | ✅ |
+| **System Packages** | ❌ | ✅ | ✅ |
+| **Docker/Containers** | ❌ | ✅ | ✅ |
+| **Shell Enhancement** | ✅ | ✅ | ✅ |
+| **Perfect for Corporate** | ✅ | ❌ | ❌ |
+
+### Work Machine Usage
+```bash
+# After installation
+source ~/.bashrc           # Activate environment
+j proj                     # Jump to projects directory
+neo                        # System info (simplified)
+
+# No edc, no Docker, no system tools - just shell productivity!
 ```
 
 ---

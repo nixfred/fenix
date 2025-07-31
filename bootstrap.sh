@@ -7,6 +7,7 @@ set -e
 # Parse command line arguments
 SKIP_SSH=false
 PUBLIC_ONLY=false
+WORK_MACHINE=false
 QUIET_MODE=false
 FORCE_MACHINE_TYPE=""
 
@@ -17,6 +18,12 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --public-only)
+            PUBLIC_ONLY=true
+            SKIP_SSH=true
+            shift
+            ;;
+        --work-machine)
+            WORK_MACHINE=true
             PUBLIC_ONLY=true
             SKIP_SSH=true
             shift
@@ -36,6 +43,7 @@ while [[ $# -gt 0 ]]; do
         --help|-h)
             echo "FeNix Bootstrap Options:"
             echo "  --public-only          Install only public configs (no SSH/private)"
+            echo "  --work-machine         Minimal work machine setup (shell only, no system changes)"
             echo "  --skip-ssh             Skip SSH key setup"
             echo "  --quiet                Minimal output"
             echo "  --remote-environment   Force remote environment setup"
@@ -145,43 +153,50 @@ else
 fi
 
 # Phase 1: Public System Setup
-echo -e "${YELLOW}📦 Phase 1: Public System Setup${RESET}"
-echo "================================="
+if [ "$WORK_MACHINE" = true ]; then
+    echo -e "${YELLOW}💼 Phase 1: Work Machine Setup (Minimal)${RESET}"
+    echo "========================================"
+    echo -e "${CYAN}🏢 Work machine mode: No system packages will be installed${RESET}"
+    echo -e "${CYAN}📋 Installing only shell environment and productivity enhancements${RESET}"
+else
+    echo -e "${YELLOW}📦 Phase 1: Public System Setup${RESET}"
+    echo "================================="
 
-# Install essential tools
-if command -v apt >/dev/null 2>&1; then
-    echo "🔧 Installing FeNix essential packages..."
-    sudo apt update && sudo apt install -y \
-        git curl wget nano htop docker.io \
-        neofetch screenfetch bat tree colordiff \
-        unzip p7zip-full unrar-free \
-        net-tools netstat-nat iotop \
-        python3 python3-pip \
-        jq ripgrep fd-find \
-        qrencode build-essential \
-        timeshift
-elif command -v dnf >/dev/null 2>&1; then
-    echo "🔧 Installing FeNix essential packages (Fedora)..."
-    sudo dnf install -y \
-        git curl wget nano htop docker \
-        neofetch screenfetch bat tree colordiff \
-        unzip p7zip unrar \
-        net-tools iotop \
-        python3 python3-pip \
-        jq ripgrep fd-find \
-        qrencode @development-tools \
-        timeshift
-elif command -v pacman >/dev/null 2>&1; then
-    echo "🔧 Installing FeNix essential packages (Arch)..."
-    sudo pacman -Sy --noconfirm \
-        git curl wget nano htop docker \
-        neofetch screenfetch bat tree colordiff \
-        unzip p7zip unrar \
-        net-tools iotop \
-        python python-pip \
-        jq ripgrep fd \
-        qrencode base-devel \
-        timeshift
+    # Install essential tools
+    if command -v apt >/dev/null 2>&1; then
+        echo "🔧 Installing FeNix essential packages..."
+        sudo apt update && sudo apt install -y \
+            git curl wget nano htop docker.io \
+            neofetch screenfetch bat tree colordiff \
+            unzip p7zip-full unrar-free \
+            net-tools netstat-nat iotop \
+            python3 python3-pip \
+            jq ripgrep fd-find \
+            qrencode build-essential \
+            timeshift
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "🔧 Installing FeNix essential packages (Fedora)..."
+        sudo dnf install -y \
+            git curl wget nano htop docker \
+            neofetch screenfetch bat tree colordiff \
+            unzip p7zip unrar \
+            net-tools iotop \
+            python3 python3-pip \
+            jq ripgrep fd-find \
+            qrencode @development-tools \
+            timeshift
+    elif command -v pacman >/dev/null 2>&1; then
+        echo "🔧 Installing FeNix essential packages (Arch)..."
+        sudo pacman -Sy --noconfirm \
+            git curl wget nano htop docker \
+            neofetch screenfetch bat tree colordiff \
+            unzip p7zip unrar \
+            net-tools iotop \
+            python python-pip \
+            jq ripgrep fd \
+            qrencode base-devel \
+            timeshift
+    fi
 fi
 
 # Clone public repositories
@@ -284,21 +299,42 @@ if [ "$PUBLIC_ONLY" = true ]; then
     TOTAL_TIME=$((END_TIME - START_TIME))
     
     echo ""
-    echo -e "${BOLD}${GREEN}🎉 FeNix PUBLIC-ONLY Installation Complete! 🎉${RESET}"
-    echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
-    echo ""
-    echo -e "${YELLOW}Public-only installation includes:${RESET}"
-    echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
-    echo "• Enhanced aliases and functions for productivity"
-    echo "• Multi-host aware configurations"
-    echo "• Basic FeNix directory structure"
-    echo ""
-    echo -e "${CYAN}To complete setup:${RESET}"
-    echo "• Run: source ~/.bashrc"
-    echo "• Test: j proj (should jump to project directory)"
-    echo "• For full FeNix: Re-run without --public-only flag"
-    echo ""
-    echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
+    if [ "$WORK_MACHINE" = true ]; then
+        echo -e "${BOLD}${GREEN}🎉 FeNix WORK MACHINE Installation Complete! 🎉${RESET}"
+        echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
+        echo ""
+        echo -e "${YELLOW}Work machine installation includes:${RESET}"
+        echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
+        echo "• Enhanced aliases and functions for productivity"
+        echo "• Multi-host aware configurations"
+        echo "• Basic FeNix directory structure"
+        echo "• ⚠️  NO system packages installed (work-friendly)"
+        echo "• ⚠️  NO Docker or container management"
+        echo "• ⚠️  NO sudo operations performed"
+        echo ""
+        echo -e "${CYAN}To use your new environment:${RESET}"
+        echo "• Run: source ~/.bashrc"
+        echo "• Test: j proj (should jump to project directory)"
+        echo "• Test: neo (system info banner)"
+        echo ""
+        echo -e "${CYAN}FeNix Work Machine ready! 💼🔥${RESET}"
+    else
+        echo -e "${BOLD}${GREEN}🎉 FeNix PUBLIC-ONLY Installation Complete! 🎉${RESET}"
+        echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
+        echo ""
+        echo -e "${YELLOW}Public-only installation includes:${RESET}"
+        echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
+        echo "• Enhanced aliases and functions for productivity"
+        echo "• Multi-host aware configurations"
+        echo "• Basic FeNix directory structure"
+        echo ""
+        echo -e "${CYAN}To complete setup:${RESET}"
+        echo "• Run: source ~/.bashrc"
+        echo "• Test: j proj (should jump to project directory)"
+        echo "• For full FeNix: Re-run without --public-only flag"
+        echo ""
+        echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
+    fi
     exit 0
 fi
 
@@ -453,11 +489,18 @@ else
 fi
 
 # Phase 4: Container Setup
-echo ""
-echo -e "${YELLOW}🐳 Phase 4: Container Environment Setup${RESET}"
-echo "======================================="
+if [ "$WORK_MACHINE" = true ]; then
+    echo ""
+    echo -e "${YELLOW}💼 Phase 4: Work Machine - Skipping Container Setup${RESET}"
+    echo "=================================================="
+    echo -e "${CYAN}🏢 Work machine mode: Container management skipped${RESET}"
+    echo -e "${CYAN}📋 No Docker tools or system modifications will be made${RESET}"
+else
+    echo ""
+    echo -e "${YELLOW}🐳 Phase 4: Container Environment Setup${RESET}"
+    echo "======================================="
 
-echo "🐳 Setting up FeNix container management..."
+    echo "🐳 Setting up FeNix container management..."
 
 # Install container management system
 if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
@@ -582,8 +625,8 @@ else
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
 fi
 
-# Install ts (timeshift) command wrapper
-if command -v timeshift >/dev/null 2>&1; then
+# Install ts (timeshift) command wrapper (skip for work machines)
+if [ "$WORK_MACHINE" = false ] && command -v timeshift >/dev/null 2>&1; then
     echo "📦 Installing FeNix ts (timeshift) command wrapper..."
     sudo tee /usr/local/bin/ts > /dev/null << 'EOF'
 #!/bin/bash
