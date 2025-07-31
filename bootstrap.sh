@@ -477,12 +477,30 @@ if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
         
         # Direct installation of edc command
         mkdir -p ~/.fenix/bin
-        if [ -f "$FENIX_DIR/public/edc" ]; then
-            cp "$FENIX_DIR/public/edc" ~/.fenix/bin/edc
-            chmod +x ~/.fenix/bin/edc
-            echo -e "${GREEN}✅ edc command installed to ~/.fenix/bin/edc${RESET}"
-        else
-            echo -e "${RED}❌ edc source file not found: $FENIX_DIR/public/edc${RESET}"
+        # Try multiple possible locations for edc
+        EDC_LOCATIONS=(
+            "$FENIX_DIR/public/edc"
+            "$(dirname "$0")/edc"
+            "./edc"
+            "$HOME/fenix/edc"
+        )
+        
+        EDC_INSTALLED=false
+        for edc_location in "${EDC_LOCATIONS[@]}"; do
+            if [ -f "$edc_location" ]; then
+                cp "$edc_location" ~/.fenix/bin/edc
+                chmod +x ~/.fenix/bin/edc
+                echo -e "${GREEN}✅ edc command installed from $edc_location to ~/.fenix/bin/edc${RESET}"
+                EDC_INSTALLED=true
+                break
+            fi
+        done
+        
+        if [ "$EDC_INSTALLED" = false ]; then
+            echo -e "${RED}❌ edc source file not found in any of these locations:${RESET}"
+            for location in "${EDC_LOCATIONS[@]}"; do
+                echo "  - $location"
+            done
         fi
     }
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
@@ -507,25 +525,41 @@ else
     fi
     
     # Install edc command
-    if [ -f "$FENIX_DIR/public/edc" ]; then
-        echo -e "${GREEN}✅ edc source file found: $FENIX_DIR/public/edc${RESET}"
-        
-        # Create bin directory
-        mkdir -p "$HOME/.fenix/bin"
-        
-        # Copy and make executable
-        cp "$FENIX_DIR/public/edc" "$HOME/.fenix/bin/edc"
-        chmod +x "$HOME/.fenix/bin/edc"
-        
+    echo -e "${CYAN}🔧 Installing edc container management command...${RESET}"
+    
+    # Create bin directory
+    mkdir -p "$HOME/.fenix/bin"
+    
+    # Try multiple possible locations for edc
+    EDC_LOCATIONS=(
+        "$FENIX_DIR/public/edc"
+        "$(dirname "$0")/edc"
+        "./edc"
+        "$HOME/fenix/edc"
+    )
+    
+    EDC_INSTALLED=false
+    for edc_location in "${EDC_LOCATIONS[@]}"; do
+        if [ -f "$edc_location" ]; then
+            cp "$edc_location" "$HOME/.fenix/bin/edc"
+            chmod +x "$HOME/.fenix/bin/edc"
+            echo -e "${GREEN}✅ edc command installed from $edc_location to ~/.fenix/bin/edc${RESET}"
+            EDC_INSTALLED=true
+            break
+        fi
+    done
+    
+    if [ "$EDC_INSTALLED" = false ]; then
+        echo -e "${RED}❌ edc source file not found in any of these locations:${RESET}"
+        for location in "${EDC_LOCATIONS[@]}"; do
+            echo "  - $location"
+        done
+    else
         # Add to PATH in .bashrc if not already there
         if ! grep -q ".fenix/bin" ~/.bashrc; then
             echo 'export PATH="$HOME/.fenix/bin:$PATH"' >> ~/.bashrc
             echo -e "${GREEN}✅ Added ~/.fenix/bin to PATH in .bashrc${RESET}"
         fi
-        
-        echo -e "${GREEN}✅ edc command installed to ~/.fenix/bin/edc${RESET}"
-    else
-        echo -e "${RED}❌ edc source file not found: $FENIX_DIR/public/edc${RESET}"
     fi
     
     # Check for existing container systems
