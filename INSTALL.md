@@ -38,6 +38,11 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
 #### Fresh System/Container (Recommended)
 ```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+```
+
+#### Public Repositories Only (No SSH Key Setup)
+```bash
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 ```
 
@@ -197,8 +202,11 @@ FENIX_MACHINE_TYPE="remote" curl -s https://raw.githubusercontent.com/nixfred/fe
 ```
 
 ### Command Line Arguments
+
+**Important:** When using options with curl | bash, use the `-s --` syntax:
+
 ```bash
-# Public-only installation (no SSH/private configs)
+# Public-only installation (no SSH/private configs) - NEW!
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
 
 # Work machine installation (ultra minimal, no system changes)
@@ -377,7 +385,8 @@ ssh -T git@github.com           # Should authenticate successfully
 pp                              # Should connect to appropriate host (if configured)
 
 # Test container access (if Docker installed)
-edc                             # Should show interactive container menu
+edc                             # Should show interactive container menu (use 'c' to cancel)
+edc --help                      # Show edc command help and usage
 docker ps                       # Should show running containers
 ```
 
@@ -521,5 +530,50 @@ After successful installation, your system will have:
 2. 🧪 Test container deployment with `edc`
 3. 🔄 Set up additional machines as remote environments
 4. 🛠️ Customize your configuration in the private repository
+
+## 🚨 Troubleshooting
+
+### Private Repository Access Issues
+
+If you encounter errors related to private repository access:
+
+```bash
+# Error: "./install.sh: No such file or directory" 
+# This happens when SSH keys aren't configured but bootstrap tries to access private repos
+
+# Solution 1: Use public-only installation first
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
+
+# Solution 2: Set up SSH keys manually then re-run bootstrap
+ssh-keygen -t ed25519 -C "your-email@example.com"
+# Add the public key to your GitHub account, then re-run:
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+```
+
+### Bootstrap Command Line Issues
+
+```bash
+# Error: "bash: --public-only: command not found"
+# Use proper -s -- syntax for passing arguments through curl:
+
+# ❌ Wrong:
+curl -s https://raw.../bootstrap.sh | bash --public-only
+
+# ✅ Correct:
+curl -s https://raw.../bootstrap.sh | bash -s -- --public-only
+```
+
+### edc Command Issues
+
+```bash
+# If edc command not found after installation:
+which edc                    # Should show /usr/local/bin/edc
+source ~/.bashrc            # Refresh shell environment
+hash -r                     # Clear command cache
+
+# Test edc functionality:
+edc --help                  # Show help
+edc                         # Interactive mode (use 'c' to cancel)
+```
 
 **🔥 Rise from the ashes, stronger than before! 🔥**

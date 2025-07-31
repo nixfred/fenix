@@ -84,7 +84,13 @@ Three-stage deployment for maximum flexibility:
 ### 🔥 **One Command to Rule Them All**
 ```bash
 # On ANY fresh Linux machine:
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap/resurrect.sh | bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
+
+# Public repositories only (no SSH setup):
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
+
+# Work machine (minimal, no system changes):
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
 
 # Result: Complete workspace restoration in <10 minutes
 ```

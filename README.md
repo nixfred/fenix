@@ -31,6 +31,11 @@ edc                # Container management
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
 ```
 
+**For public repositories only (no SSH key setup):**
+```bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
+```
+
 ---
 
 **THIS IS YOUR COMPLETE RUNBOOK** - Everything you need to deploy, manage, and maintain the FeNix system. No external docs needed!
@@ -194,8 +199,9 @@ j proj                  # Jump to projects (auto-detected)
 pp                      # Smart SSH (pi5 ↔ ron, others → pi5)
 
 # Container operations
-edc                     # Interactive container menu
+edc                     # Interactive container menu (use 'c' to cancel)
 edc 2                   # Direct access to container #2
+edc --help              # Show edc help and usage
 
 # System information
 neo                     # System health check and info banner
