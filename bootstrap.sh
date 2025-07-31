@@ -259,10 +259,6 @@ neo() {
     echo "=========================="
 }
 
-# Timeshift alias for system snapshots
-if command -v timeshift >/dev/null 2>&1; then
-    alias ts='sudo timeshift'
-fi
 
 echo "🔥 FeNix shell environment loaded!"
 EOF
@@ -487,6 +483,38 @@ elif [ -f "$FENIX_DIR/public/edc" ]; then
     echo -e "${GREEN}✅ FeNix edc command installed!${RESET}"
 else
     echo -e "${YELLOW}⚠️  Container management system not found${RESET}"
+fi
+
+# Install ts (timeshift) command wrapper
+if command -v timeshift >/dev/null 2>&1; then
+    echo "📦 Installing FeNix ts (timeshift) command wrapper..."
+    sudo tee /usr/local/bin/ts > /dev/null << 'EOF'
+#!/bin/bash
+# FeNix ts - Timeshift wrapper for easy system snapshots
+sudo timeshift "$@"
+EOF
+    sudo chmod +x /usr/local/bin/ts 2>/dev/null || {
+        # If sudo fails, try user bin directory
+        mkdir -p "$HOME/.local/bin"
+        tee "$HOME/.local/bin/ts" > /dev/null << 'EOF'
+#!/bin/bash
+# FeNix ts - Timeshift wrapper for easy system snapshots
+sudo timeshift "$@"
+EOF
+        chmod +x "$HOME/.local/bin/ts"
+        # Add to PATH if not already there
+        if ! grep -q ".local/bin" ~/.bashrc; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+        fi
+    }
+    echo -e "${GREEN}✅ FeNix ts command installed!${RESET}"
+else
+    echo -e "${YELLOW}⚠️  Timeshift not available, ts command skipped${RESET}"
+fi
+
+# Container fallback section
+if [ -z "$(find $FENIX_DIR/public -name "edc" -o -name "manage.sh" 2>/dev/null)" ]; then
+    echo -e "${YELLOW}⚠️  No container management tools found${RESET}"
     
     # Fallback: basic Docker setup if available
     if command -v docker >/dev/null 2>&1; then
