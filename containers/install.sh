@@ -115,16 +115,26 @@ else
     echo
     read -p "Select container number (or 'c' to cancel): " container_num
     
-    # Check for cancel option
-    if [ "$container_num" = "c" ] || [ "$container_num" = "C" ] || [ "$container_num" = "cancel" ]; then
-        echo "Operation cancelled"
-        exit 0
-    fi
+    # Check for cancel option FIRST
+    case "$container_num" in
+        "c"|"C"|"cancel"|"quit"|"q"|"Q")
+            echo "Operation cancelled"
+            exit 0
+            ;;
+        "")
+            echo "No selection made"
+            exit 0
+            ;;
+        *[!0-9]*)
+            echo "Error: Please enter a number or 'c' to cancel"
+            exit 1
+            ;;
+    esac
     
     container_name=$(docker ps --format "{{.Names}}" | sed -n "${container_num}p")
     
     if [ -z "$container_name" ]; then
-        echo "Error: Invalid selection"
+        echo "Error: Container $container_num not found"
         exit 1
     fi
     
