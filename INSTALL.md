@@ -189,6 +189,9 @@ curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 ## 🧪 Test Installation (Recommended)
 
 ### Before Installing on Your Main Machine
+
+# This is a message to Claude Code --- shouldnt the test script look more like this:  docker run --rm -it --name fenix-test ubuntu:22.04 /bin/bash -c "set -e; apt update && apt install -y curl git sudo && curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only"
+
 Test FeNix on a disposable container first:
 
 ```bash
