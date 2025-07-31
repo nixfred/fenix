@@ -295,50 +295,7 @@ fi
 
 echo -e "${GREEN}✅ Phase 1 Complete: Basic system ready!${RESET}"
 
-# Exit early if public-only mode
-if [ "$PUBLIC_ONLY" = true ]; then
-    END_TIME=$(date +%s)
-    TOTAL_TIME=$((END_TIME - START_TIME))
-    
-    echo ""
-    if [ "$WORK_MACHINE" = true ]; then
-        echo -e "${BOLD}${GREEN}🎉 FeNix WORK MACHINE Installation Complete! 🎉${RESET}"
-        echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
-        echo ""
-        echo -e "${YELLOW}Work machine installation includes:${RESET}"
-        echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
-        echo "• Enhanced aliases and functions for productivity"
-        echo "• Multi-host aware configurations"
-        echo "• Basic FeNix directory structure"
-        echo "• ⚠️  NO system packages installed (work-friendly)"
-        echo "• ⚠️  NO Docker or container management"
-        echo "• ⚠️  NO sudo operations performed"
-        echo ""
-        echo -e "${CYAN}To use your new environment:${RESET}"
-        echo "• Run: source ~/.bashrc"
-        echo "• Test: j proj (should jump to project directory)"
-        echo "• Test: neo (system info banner)"
-        echo ""
-        echo -e "${CYAN}FeNix Work Machine ready! 💼🔥${RESET}"
-    else
-        echo -e "${BOLD}${GREEN}🎉 FeNix PUBLIC-ONLY Installation Complete! 🎉${RESET}"
-        echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
-        echo ""
-        echo -e "${YELLOW}Public-only installation includes:${RESET}"
-        echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
-        echo "• Enhanced aliases and functions for productivity"
-        echo "• Multi-host aware configurations"
-        echo "• Basic FeNix directory structure"
-        echo ""
-        echo -e "${CYAN}To complete setup:${RESET}"
-        echo "• Run: source ~/.bashrc"
-        echo "• Test: j proj (should jump to project directory)"
-        echo "• For full FeNix: Re-run without --public-only flag"
-        echo ""
-        echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
-    fi
-    exit 0
-fi
+# Don't exit yet - we need to install edc for public-only mode too!
 
 echo ""
 
@@ -674,13 +631,55 @@ END_TIME=$(date +%s)
 TOTAL_TIME=$((END_TIME - START_TIME))
 
 echo ""
-echo -e "${BOLD}${GREEN}🎉🎉🎉 FeNix RESURRECTION COMPLETE! 🎉🎉🎉${RESET}"
-echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
-echo ""
-echo -e "${YELLOW}Next steps:${RESET}"
-echo "• Run: source ~/.bashrc"
-echo "• Test: j proj (should jump to project directory)"
-echo "• Test: edc (container access if Docker available)"
-echo "• Configure: fenix config (for host-specific settings)"
-echo ""
-echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"# Force update
+
+# Show appropriate completion message based on installation type
+if [ "$PUBLIC_ONLY" = true ]; then
+    if [ "$WORK_MACHINE" = true ]; then
+        echo -e "${BOLD}${GREEN}🎉 FeNix WORK MACHINE Installation Complete! 🎉${RESET}"
+        echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
+        echo ""
+        echo -e "${YELLOW}Work machine installation includes:${RESET}"
+        echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
+        echo "• Enhanced aliases and functions for productivity"
+        echo "• Multi-host aware configurations"
+        echo "• Basic FeNix directory structure"
+        echo "• ⚠️  NO system packages installed (work-friendly)"
+        echo "• ⚠️  NO Docker or container management"
+        echo "• ⚠️  NO sudo operations performed"
+        echo ""
+        echo -e "${CYAN}To use your new environment:${RESET}"
+        echo "• Run: source ~/.bashrc"
+        echo "• Test: j proj (should jump to project directory)"
+        echo "• Test: neo (system info banner)"
+        echo ""
+        echo -e "${CYAN}FeNix Work Machine ready! 💼🔥${RESET}"
+    else
+        echo -e "${BOLD}${GREEN}🎉 FeNix PUBLIC-ONLY Installation Complete! 🎉${RESET}"
+        echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
+        echo ""
+        echo -e "${YELLOW}Public-only installation includes:${RESET}"
+        echo "• Dynamic shell environment (.bashrc with intelligent path detection)"
+        echo "• Enhanced aliases and functions for productivity"
+        echo "• Multi-host aware configurations"
+        echo "• Basic FeNix directory structure"
+        echo "• Container management tools (edc command)"
+        echo ""
+        echo -e "${CYAN}To complete setup:${RESET}"
+        echo "• Run: source ~/.bashrc"
+        echo "• Test: j proj (should jump to project directory)"
+        echo "• Test: edc (container management tool)"
+        echo "• For full FeNix: Re-run without --public-only flag"
+        echo ""
+        echo -e "${CYAN}FeNix System (public-only) ready! 🔥${RESET}"
+    fi
+else
+    echo -e "${BOLD}${GREEN}🎉🎉🎉 FeNix RESURRECTION COMPLETE! 🎉🎉🎉${RESET}"
+    echo -e "${CYAN}Total time: ${TOTAL_TIME} seconds${RESET}"
+    echo ""
+    echo -e "${YELLOW}Next steps:${RESET}"
+    echo "• Run: source ~/.bashrc"
+    echo "• Test: j proj (should jump to project directory)"
+    echo "• Test: edc (container access if Docker available)"
+    echo ""
+    echo -e "${CYAN}Welcome back to your digital life! 🔥${RESET}"
+fi
