@@ -459,8 +459,24 @@ echo "🐳 Setting up FeNix container management..."
 if [ -f "$FENIX_DIR/public/containers/install.sh" ]; then
     echo "📦 Installing FeNix container management tools..."
     cd "$FENIX_DIR/public/containers"
-    ./install.sh
+    ./install.sh 2>/dev/null || {
+        echo "⚠️  Container install script failed, using direct installation..."
+        cd "$FENIX_DIR"
+    }
     echo -e "${GREEN}✅ Container management system installed!${RESET}"
+elif [ -f "$FENIX_DIR/public/edc" ]; then
+    echo "📦 Installing FeNix edc command directly..."
+    chmod +x "$FENIX_DIR/public/edc"
+    sudo cp "$FENIX_DIR/public/edc" /usr/local/bin/edc 2>/dev/null || {
+        # If sudo fails, try user bin directory
+        mkdir -p "$HOME/.local/bin"
+        cp "$FENIX_DIR/public/edc" "$HOME/.local/bin/edc"
+        # Add to PATH if not already there
+        if ! grep -q ".local/bin" ~/.bashrc; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+        fi
+    }
+    echo -e "${GREEN}✅ FeNix edc command installed!${RESET}"
 else
     echo -e "${YELLOW}⚠️  Container management system not found${RESET}"
     
