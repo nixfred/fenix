@@ -82,14 +82,35 @@ echo "================================="
 
 # Install essential tools
 if command -v apt >/dev/null 2>&1; then
-    echo "🔧 Installing essential tools..."
-    sudo apt update && sudo apt install -y git curl wget nano htop docker.io
+    echo "🔧 Installing FeNix essential packages..."
+    sudo apt update && sudo apt install -y \
+        git curl wget nano htop docker.io \
+        neofetch screenfetch bat tree colordiff \
+        unzip p7zip-full unrar-free \
+        net-tools netstat-nat iotop \
+        python3 python3-pip \
+        jq ripgrep fd-find \
+        qrencode build-essential
 elif command -v dnf >/dev/null 2>&1; then
-    echo "🔧 Installing essential tools (Fedora)..."
-    sudo dnf install -y git curl wget nano htop docker
+    echo "🔧 Installing FeNix essential packages (Fedora)..."
+    sudo dnf install -y \
+        git curl wget nano htop docker \
+        neofetch screenfetch bat tree colordiff \
+        unzip p7zip unrar \
+        net-tools iotop \
+        python3 python3-pip \
+        jq ripgrep fd-find \
+        qrencode @development-tools
 elif command -v pacman >/dev/null 2>&1; then
-    echo "🔧 Installing essential tools (Arch)..."
-    sudo pacman -Sy --noconfirm git curl wget nano htop docker
+    echo "🔧 Installing FeNix essential packages (Arch)..."
+    sudo pacman -Sy --noconfirm \
+        git curl wget nano htop docker \
+        neofetch screenfetch bat tree colordiff \
+        unzip p7zip unrar \
+        net-tools iotop \
+        python python-pip \
+        jq ripgrep fd \
+        qrencode base-devel
 fi
 
 # Clone public repositories
@@ -98,7 +119,7 @@ mkdir -p "$FENIX_DIR"
 cd "$FENIX_DIR"
 
 git clone https://github.com/nixfred/fenix.git public
-git clone https://github.com/nixfred/dotfiles-public.git dotfiles
+git clone https://github.com/nixfred/fenix-dotfiles.git dotfiles
 
 # Install public dotfiles
 echo "🏠 Installing public dotfiles..."
