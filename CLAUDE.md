@@ -2,259 +2,366 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Overview
 
-**FeNix** is the ultimate Git-based Infrastructure-as-Code solution for portable development environments. Like the mythical phoenix, your entire digital workspace can be resurrected from ashes (a fresh Linux machine) in under 10 minutes using a single bootstrap command.
+This is the **FeNix Phoenix System** - a comprehensive Git-based Infrastructure-as-Code solution for portable development environments. FeNix enables complete digital workspace resurrection from a fresh Linux machine in under 10 minutes using a single bootstrap command.
 
-### Core Philosophy
-> **"If my machine dies, I'm back to 100% productivity in under 10 minutes"**
-> 
-> **"From Zero to Hero - One Command to Rule Them All"**
+**Core Philosophy**: *"If my machine dies, I'm back to 100% productivity in under 10 minutes"*
 
-FeNix treats your entire development environment as code, making it reproducible, portable, and bulletproof across any Linux distribution, any architecture (ARM64/x86_64), any host.
+## Architecture Overview
 
-## What Makes FeNix Revolutionary
+### Multi-Host Infrastructure
+FeNix operates across a scalable distributed architecture:
+- **Main Host** (Primary workstation) ↔ **Multiple Remote Clients** (Development, testing, production environments)
+- **Unlimited scalability**: Add any number of remote clients with role-based management
+- **Cross-architecture compatibility**: ARM64 + x86_64 + any Linux distribution
+- **Automatic host discovery and configuration**: Dynamic client registration and management
+- **Role-based deployment**: Deploy containers based on client roles (development, testing, production, mobile)
+- **Bidirectional file synchronization and container orchestration**
+- **Backward compatible**: Existing ron/pi5 setups automatically migrate to new architecture
 
-### 🔥 **Beyond Simple Dotfiles**
-While others manage just dotfiles, FeNix manages **your entire digital life**:
-- ✅ **Dynamic Configuration**: Self-adapting .bashrc with intelligent path detection
-- ✅ **Multi-Host Orchestration**: Seamless pi5 ↔ ron synchronization  
-- ✅ **Container Ecosystems**: Full Docker development environments
-- ✅ **System Health Monitoring**: Timeshift, SSH security, resource tracking
-- ✅ **Cross-Architecture Support**: Raspberry Pi ARM64 + x86_64 laptops
-- ✅ **Chaos-Tested**: Validated across Ubuntu, Debian, Fedora, Arch, Alpine
-
-### 🎪 **The FeNix Architecture**
-
+### Repository Ecosystem
 ```
-FeNix Master Repository Structure:
-├── CLAUDE.md                    # This file - AI assistant instructions
-├── README.md                    # Human-readable project overview  
-├── bootstrap/                   # FeNix resurrection scripts
-│   ├── stage1-public.sh        # Anonymous bootstrap (no auth needed)
-│   ├── stage2-ssh.sh           # SSH key configuration wizard  
-│   ├── stage3-private.sh       # Private repository deployment
-│   └── resurrect.sh            # Master one-command rebuilder
-├── dotfiles/                   # Submodule → your dotfiles repo
-├── containers/                 # Submodule → universal container creator
-├── testing/                    # FeNix Testing Labs
-│   ├── multi-distro-test.sh   # Test across Linux distributions
-│   ├── chaos-engineering.sh   # Break things to make them stronger
-│   └── performance-bench.sh   # Measure deployment speed
-├── docs/                       # Comprehensive documentation
-└── examples/                   # Sample configurations and templates
+/home/pi/
+├── fenix/                  # Master system repository
+│   ├── bootstrap.sh        # One-command installation
+│   ├── testing/           # Multi-distro chaos testing
+│   ├── CLAUDE.md          # System documentation
+│   ├── README.md          # Complete user runbook
+│   └── edc                # Container access tool
+├── .fenix/                 # Multi-host configuration system
+│   ├── hosts.conf          # Host configuration and relationships
+│   ├── host-manager.sh     # Host management library functions
+│   ├── setup-remote-client.sh  # Add new remote clients
+│   ├── monitor-clients.sh  # Multi-client status dashboard
+│   ├── deploy-container.sh # Deploy containers to multiple clients
+│   ├── client-workflows.md # Documentation for client workflows
+│   └── integration-test.sh # Test suite for multi-host system
+├── fenix-dotfiles/        # Public shell configurations
+│   ├── CLAUDE.md          # Dotfiles development guide
+│   ├── install.sh         # Multi-stage installation
+│   └── bin/               # Utility scripts
+├── fenix-private/         # SSH keys and secrets (private)
+│   ├── configs/           # Host-specific configurations
+│   ├── secrets/           # API keys and tokens
+│   └── ssh/               # SSH key management
+├── docker/                # Multi-tier container management
+│   ├── universal/         # Universal Container Creator (JSON templates)
+│   ├── ubuntu-vm/         # Ubuntu development containers (V1/V2)
+│   ├── kali/             # Security testing environments
+│   └── CLAUDE.md          # Container architecture guide
+└── dotfiles/              # Additional container utilities
 ```
 
-## FeNix Core Components
+## Key Components
 
-### 1. **Dynamic Path Detection System**
-No more hardcoded paths! FeNix automatically discovers:
-- Tool locations (`edc`, utilities)
-- Project directories (adapts to any structure)
-- Container configurations (ubuntu-vm, docker projects)
-- Git repositories (handles moves and renames)
+### 1. Bootstrap System (`fenix/bootstrap.sh`)
+Three-stage deployment architecture:
+- **Stage 1**: Public repository setup (no authentication)
+- **Stage 2**: SSH key configuration wizard
+- **Stage 3**: Private repository deployment and container setup
 
-### 2. **Multi-Host Infrastructure**
-- **Primary Hosts**: pi5 (Raspberry Pi) ↔ ron (Remote host)
-- **Auto-Discovery**: Detects current host and configures remote
-- **Bidirectional Sync**: Real-time file synchronization
-- **Container Deployment**: Orchestrates Docker across both hosts
-
-### 3. **FeNix Testing Labs**
-Revolutionary testing approach:
+**Usage patterns**:
 ```bash
-# Test FeNix on pristine containers
-./testing/multi-distro-test.sh
-
-# Chaos engineering scenarios  
-./testing/chaos-engineering.sh --scenario network_failure
-
-# Performance benchmarking
-./testing/performance-bench.sh --target-time 600s
-```
-
-### 4. **Smart Bootstrap System**
-Three-stage deployment for maximum flexibility:
-- **Stage 1**: Public repos, basic setup (2 minutes)
-- **Stage 2**: SSH key wizard (1 minute)  
-- **Stage 3**: Private configs, full deployment (7 minutes)
-
-## The FeNix Resurrection Process
-
-### 🔥 **One Command to Rule Them All**
-```bash
-# On ANY fresh Linux machine:
+# Full installation
 curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
-# Public repositories only (no SSH setup):
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --public-only
+# Public-only mode
+curl -s ... | bash -s -- --public-only
 
-# Work machine (minimal, no system changes):
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash -s -- --work-machine
-
-# Result: Complete workspace restoration in <10 minutes
+# Work machine mode (minimal changes)
+curl -s ... | bash -s -- --work-machine
 ```
 
-### 🎯 **What Gets Resurrected**
-- ✅ All dotfiles with dynamic path detection
-- ✅ Multi-host container environments
-- ✅ Development tools and enhanced shell
-- ✅ Security monitoring and backup systems  
-- ✅ Cross-machine project synchronization
-- ✅ Interactive container management
-- ✅ System health dashboards
+### 2. Dynamic Shell Environment (`fenix-dotfiles/`)
+Portable bash configuration with intelligent adaptation:
+- **Dynamic path detection**: No hardcoded paths, auto-discovers tools and directories
+- **Multi-host awareness**: Smart SSH routing (`pp` command), container synchronization
+- **Cross-platform compatibility**: Works on Ubuntu, Debian, Fedora, Arch, Alpine, CentOS
 
-## Advanced FeNix Features
+### 3. Universal Container Creator (`docker/universal/`)
+Sophisticated Docker orchestration system with modular bash architecture:
+- **Template-driven deployment**: JSON templates generate optimized Dockerfiles/docker-compose.yml
+- **Multi-host container deployment**: Automatic sync and deployment to ron + pi5
+- **Profile management**: Complete container configurations stored as JSON for redeployment
+- **Health monitoring**: Real-time resource tracking and status dashboards
+- **Interactive wizards**: Guided container creation with template selection
+- **Docker Hub integration**: Search and discover images with API integration
 
-### **Infrastructure Monitoring Dashboard**
-Built into every shell session:
-```
-****************************************************
-*  Host:        pi5                                *
-*  Docker:      3 running / 8 total               *
-*  Timeshift:   12 snapshots, 45GB free          *
-*  Updates:     None                              *
-*  Git Branch:  main                              *  
-*  SSH Fails:   None                              *
-****************************************************
-```
+### 4. FeNix Testing Labs (`fenix/testing/`)
+Comprehensive validation system:
+- **Multi-distro testing**: Automated testing across 6+ Linux distributions
+- **Chaos engineering**: Network failures, disk space, broken dependencies
+- **Performance benchmarking**: Target <10 minutes for complete system restoration
 
-### **Container Orchestration**
+## Common Commands
+
+### System Management
 ```bash
-# Interactive container access
-edc                          # Menu-driven container selection
-edc 2                        # Direct access to container #2
+# Reload shell configuration
+sb
 
-# Multi-host deployment
-./containers/manage.sh deploy universal    # Deploy to both hosts
-./containers/manage.sh sync to             # Push to remote host
+# Jump to projects directory (dynamic detection)
+j proj
+
+# Smart SSH routing between hosts
+pp
+
+# System health dashboard
+neo
+
+# Create system snapshot
+ts "backup description"
 ```
 
-### **Intelligent Backup System**
+### Container Operations
 ```bash
-# Git-based dotfiles sync
-bashup                       # Push all changes to GitHub
-bashdown                     # Restore from GitHub with backups
+# Interactive container menu
+edc
 
-# System snapshots  
-ts "pre-upgrade backup"      # Timeshift snapshot with comment
+# Direct container access
+edc <number>
+
+# Universal container management
+cd docker/universal
+./manage.sh start              # Interactive creation wizard
+./manage.sh quick python-dev    # Quick template deployment
+./manage.sh deploy <name>       # Multi-host deployment
+./manage.sh list               # List all containers
+./manage.sh monitor <name>     # Real-time monitoring
+./manage.sh profiles           # Profile management
+./manage.sh templates          # Template management
+./manage.sh search <term>      # Docker Hub search
 ```
 
-## FeNix Testing Philosophy
-
-### **Battle-Tested Infrastructure**
-FeNix is validated across:
-- **6 Linux Distributions**: Ubuntu, Debian, Fedora, CentOS, Arch, Alpine
-- **2 Architectures**: ARM64 (Raspberry Pi) + x86_64 (laptops/servers)
-- **8 Chaos Scenarios**: Network failures, disk full, broken SSH, etc.
-- **Performance Targets**: <10 minutes full deployment
-
-### **Continuous Integration**
-Every FeNix change is automatically tested:
+### Multi-Host Management
 ```bash
-# Multi-distro compatibility matrix
-for distro in ubuntu:22.04 debian:12 fedora:39 alpine:3.19; do
-    docker run --rm "$distro" ./test-fenix-bootstrap.sh
+# Add new remote client
+./setup-remote-client.sh pi-lab 192.168.1.150 development
+
+# Monitor all clients
+./monitor-clients.sh
+
+# Deploy containers to specific clients
+./deploy-container.sh python-dev pi-dev server-prod
+
+# Deploy to all clients with specific role
+./deploy-container.sh kali-security --role testing
+
+# Deploy to all clients
+./deploy-container.sh node-web --all
+
+# Connect to remote clients
+pp pi-dev                    # Connect to specific client
+pp-role development "sb"     # Run command on all development clients
+pp-all "docker ps"           # Run command on all clients
+```
+
+### Configuration Sync
+```bash
+# Push dotfiles to GitHub
+bashup
+
+# Pull dotfiles from GitHub (with backup)
+bashdown
+
+# Check dotfiles status
+bashstat
+```
+
+### Testing and Validation
+```bash
+# Multi-distro compatibility test
+cd fenix/testing
+./multi-distro-test.sh
+
+# Chaos engineering scenarios
+./chaos-engineering.sh --scenario network_failure
+
+# Performance benchmarking
+./performance-bench.sh --target-time 600s
+
+# Multi-host system integration tests
+cd ~/.fenix
+./integration-test.sh
+
+# Test host management functions
+./test-hosts.sh
+```
+
+## Architecture Patterns
+
+### Dynamic Path Detection
+All scripts use intelligent discovery instead of hardcoded paths:
+```bash
+# Tool detection pattern
+for tool_path in "/usr/local/bin/edc" "$HOME/bin/edc" "$HOME/.local/bin/edc"; do
+    if [ -f "$tool_path" ]; then
+        alias edc="$tool_path"
+        break
+    fi
 done
 
-# Cross-architecture validation
-docker run --platform linux/arm64 ubuntu:22.04 ./test-fenix-arm64.sh
-docker run --platform linux/amd64 ubuntu:22.04 ./test-fenix-x86_64.sh
+# Directory discovery pattern
+for proj_dir in "$HOME/projects" "$HOME/Projects" "$HOME/workspace" "$HOME/docker"; do
+    if [ -d "$proj_dir" ]; then
+        cd "$proj_dir"
+        return 0
+    fi
+done
 ```
 
-## Security Architecture
+### Multi-Host Operations
+All remote operations follow sync-first pattern:
+1. Sync files to remote host
+2. Execute command remotely via SSH
+3. Return results to local host
 
-### **Defense in Depth**
-- **System Level**: Timeshift snapshots for OS recovery
-- **Configuration Level**: Git versioning for all configs
-- **Network Level**: SSH key-based multi-host authentication
-- **Container Level**: Isolated testing environments
-- **Monitoring Level**: SSH intrusion detection, system health tracking
+### Container Management Architecture
+```
+docker/universal/manage.sh (Unified interface)
+├── config.sh (Host detection, path configuration, defaults)
+├── interactive-config.sh (Interactive container creation wizard)
+├── template-manager.sh (JSON templates → Dockerfile/Compose generation)
+├── container-builder.sh (Docker build engine with progress tracking)
+├── profile-manager.sh (Save/load complete container configurations)
+├── health-monitor.sh (Real-time monitoring and resource tracking)
+├── docker-search.sh (Docker Hub API integration)
+└── test-system.sh (System validation and testing)
 
-### **Secret Management**
-- **Public Repos**: Sanitized configurations safe for GitHub
-- **Private Repos**: Sensitive keys, passwords, host-specific configs
-- **Bootstrap Wizard**: Interactive secret configuration during setup
+docker/ubuntu-vm/ and docker/kali/ (Specialized containers)
+├── manage.sh (Container-specific interface)
+├── start.sh, destroy.sh (Lifecycle management)
+├── bootstrap.sh (Tool installation and configuration)
+└── sync.sh (Multi-host file synchronization)
+```
 
-## Why FeNix is Superior
+### Error Handling Philosophy
+- **Graceful degradation**: Missing tools don't break functionality
+- **Clear feedback**: Users know what's happening and why
+- **Fallback options**: Alternative approaches when primary method fails
+- **Atomic operations**: Prevent partial state corruption
 
-### **Comparison with Existing Solutions**
+## Security Considerations
 
-| Feature | FeNix | Thoughtbot Laptop | Mathias Dotfiles | Holman Dotfiles |
-|---------|-------|-------------------|------------------|-----------------|
-| Multi-Host Sync | ✅ | ❌ | ❌ | ❌ |
-| Container Orchestration | ✅ | ❌ | ❌ | ❌ |
-| Cross-Architecture | ✅ | ❌ | ❌ | ❌ |
-| Chaos Testing | ✅ | ❌ | ❌ | ❌ |
-| Dynamic Path Detection | ✅ | ❌ | ❌ | ❌ |
-| System Health Monitoring | ✅ | ❌ | ❌ | ❌ |
-| Recovery Time | <10 min | ~30 min | ~20 min | ~15 min |
+### Repository Security Model
+- **Public repos** (`fenix`, `fenix-dotfiles`): Sanitized configurations, no secrets
+- **Private repos** (`fenix-private`): SSH keys, API tokens, host-specific configs
+- **Same SSH keys everywhere**: Enables seamless multi-host operation
 
-### **Real-World Impact**
-- **Home Lab Management**: Perfect for Raspberry Pi clusters
-- **Development Teams**: Consistent environments across all developers
-- **Disaster Recovery**: Business continuity for development workflows
-- **Education**: Teaching Infrastructure-as-Code principles
-- **Research**: Reproducible computational environments
+### Shell Configuration Security
+- **Input validation**: All user inputs validated against safe character sets
+- **No hardcoded credentials**: All sensitive data in private repository
+- **Safe defaults**: Functions fail safely in unexpected environments
 
-## Contributing to FeNix
+## Development Guidelines
 
-### **Development Workflow**
-1. **Test First**: Use FeNix Testing Labs before deploying
-2. **Document Changes**: Update relevant CLAUDE.md files
-3. **Maintain Portability**: No hardcoded paths, dynamic detection only
-4. **Security Review**: Ensure no secrets in public repos
-5. **Multi-Host Validation**: Test on both pi5 and ron
+### Making Changes to FeNix
+1. **Test first**: Use Testing Labs to validate across distributions
+2. **Maintain portability**: No hardcoded paths, use dynamic detection
+3. **Document changes**: Update relevant CLAUDE.md files
+4. **Security review**: Ensure no secrets in public repositories
+5. **Multi-host validation**: Test on both ARM64 and x86_64
 
-### **Architecture Principles**
-- **Simplicity**: One command should do everything
-- **Reliability**: Must work 99.9% of the time
-- **Portability**: Any Linux, any architecture
-- **Speed**: <10 minutes for complete restoration
-- **Security**: Defense in depth, no secret leakage
+### Container Development
+1. **Use templates**: Start with existing JSON templates in `docker/universal/templates/`
+2. **Test in isolation**: Create containers before deploying to hosts
+3. **Follow naming conventions**: Container names should be descriptive and unique
+4. **Include health checks**: All containers should have proper health monitoring
 
-## FeNix 1.0 Achievement Summary
-
-### **Production-Ready Features**
-- **Multi-Host Infrastructure**: Complete pi5 ↔ ron synchronization with smart SSH routing
-- **Container Ecosystem**: Full Docker development environments with ubuntu-start/destroy commands
-- **Dynamic Configuration**: Self-adapting .bashrc with intelligent path detection across all Linux distributions
-- **Container-Safe Bootstrap**: Works seamlessly inside containers without sudo errors
-- **Cross-Architecture Support**: ARM64 (Raspberry Pi) and x86_64 compatibility tested and validated
-
-### **Technical Excellence**
-- **Battle-Tested**: Validated across 6 Linux distributions and 2 architectures
-- **Container-Native**: Bootstrap script intelligently adapts to container environments
-- **Zero-Dependency**: Works on minimal systems without external dependencies
-- **Error-Resilient**: Comprehensive error handling and graceful degradation
-
----
-
-## Quick Start Guide
-
-### **New to FeNix? Start Here:**
+### Testing New Features
 ```bash
-# 1. Resurrect on fresh machine
-curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap/resurrect.sh | bash
+# Test on pristine container
+docker run -it ubuntu:22.04 /bin/bash
+curl -s https://raw.githubusercontent.com/nixfred/fenix/main/bootstrap.sh | bash
 
-# 2. Validate deployment  
-fenix health-check
+# Multi-distro validation
+cd fenix/testing && ./multi-distro-test.sh
 
-# 3. Start developing!
-j proj                    # Jump to projects
-edc                       # Access containers
+# Chaos engineering
+./chaos-engineering.sh --scenario <scenario_name>
 ```
 
-### **Daily FeNix Usage**
-```bash
-bashup                    # Sync changes to GitHub
-pp                        # SSH to other host
-ts "daily backup"         # Create system snapshot
-neo                       # Check system status
-```
+## Important Files
 
----
+### Configuration Files
+- `~/.bashrc`: Main shell configuration (managed by fenix-dotfiles)
+- `~/.bash_functions`: Shell functions with utilities (extract, mkcd, genpass, ts, gitcommit)
+- `~/.fenix/hosts.conf`: Multi-host configuration (main host, remotes, roles)
+- `docker/universal/shared/.bashrc`: Enhanced container shell environment
+- `docker/universal/shared/container_config.env`: Container build configurations
+- `docker/universal/templates/*.json`: Container creation templates
+- `docker/universal/profiles/*.json`: Saved container configurations
 
-**FeNix represents the evolution from configuration management to complete Digital Life as Code (DLaC).** Every component is designed for ultimate reliability, maximum portability, and rapid disaster recovery.
+### Management Scripts
+- `fenix/bootstrap.sh`: Master installation script
+- `~/.fenix/host-manager.sh`: Multi-host management library functions
+- `~/.fenix/setup-remote-client.sh`: Add and configure new remote clients
+- `~/.fenix/monitor-clients.sh`: Real-time multi-client status dashboard
+- `~/.fenix/deploy-container.sh`: Deploy containers to multiple clients
+- `docker/universal/manage.sh`: Universal container orchestration interface
+- `docker/ubuntu-vm/manage.sh`: Ubuntu container management
+- `docker/kali/manage.sh`: Kali security container management
+- `fenix-dotfiles/install.sh`: Multi-stage dotfiles installation
+- `fenix/edc`: Container access tool (copied to system PATH)
 
-*"Rise from the ashes, stronger than before."* 🔥
+### Template and Profile Storage
+- `docker/universal/templates/*.json`: Container creation templates (python-dev, node-web, security-kali, etc.)
+- `docker/universal/profiles/*.json`: Saved container configurations for redeployment
+- `docker/universal/shared/`: Persistent container data, logs, and build directories
+- `docker/universal/shared/build_*/`: Container-specific build environments
+- `docker/universal/shared/logs/`: Container operation logs
+
+### Testing and Validation Scripts
+- `~/.fenix/integration-test.sh`: Comprehensive multi-host system test suite
+- `~/.fenix/test-hosts.sh`: Host management system validation tests
+- `~/.fenix/client-workflows.md`: Complete documentation of client workflows and patterns
+
+## Performance Targets
+
+- **Complete system restoration**: <10 minutes
+- **Bootstrap phase 1** (public setup): <3 minutes
+- **SSH key configuration**: <2 minutes
+- **Private configuration install**: <3 minutes
+- **Container environment setup**: <2 minutes
+
+## Troubleshooting Common Issues
+
+### Bash Function Updates
+Recent improvements to `.bash_functions`:
+- Enhanced `gitcommit` function with empty commit prevention and status feedback
+- All essential functions working: extract, mkcd, genpass, ts (timeshift), gitcommit
+- Syntax errors resolved through simplification and character encoding fixes
+
+### SSH Connection Issues
+- Verify SSH keys exist: `ls -la ~/.ssh/id_rsa`
+- Test GitHub access: `ssh -T git@github.com`
+- Regenerate known_hosts if needed
+
+### Container Issues
+- Check container logs: `./manage.sh logs <container_name>`
+- Monitor resources: `./manage.sh monitor <container_name>`
+- Validate JSON templates: `jq . templates/<template>.json`
+- Test system health: `./test-system.sh` (in docker/universal/)
+- Check container status: `./manage.sh list` or `./manage.sh status`
+- Access container shell: `./manage.sh connect <container_name>`
+
+### Multi-Host System Issues
+- **Configuration problems**: Run `~/.fenix/test-hosts.sh` to validate host configuration
+- **Client connectivity**: Use `~/.fenix/monitor-clients.sh` to check all client status
+- **Integration test failures**: Run `~/.fenix/integration-test.sh` for comprehensive validation
+- **Host configuration missing**: Run `setup_fenix_hosts` to create initial configuration
+- **Legacy migration**: Existing ron/pi5 setups automatically migrate to new system
+- **SSH connectivity**: Test with `pp <client>` or check SSH keys on all hosts
+- **Container deployment failures**: Verify client has FeNix installed and docker running
+- **Role-based deployment issues**: Check host roles with `list_fenix_hosts`
+
+This system represents the evolution from simple dotfiles to complete Infrastructure-as-Code with unlimited scalability. The multi-host architecture enables distributed development environments across any number of clients while maintaining the core FeNix philosophy of <10-minute disaster recovery and complete portability across any Linux environment.
+
+## Multi-Host Architecture Benefits
+- **Unlimited Scaling**: Add any number of remote clients with role-based management
+- **Backward Compatible**: Existing ron/pi5 setups automatically migrate to new system
+- **Role-Based Deployment**: Deploy different container configurations based on client roles
+- **Real-Time Monitoring**: Dashboard view of all clients with health and resource monitoring
+- **Automated Client Setup**: Single command to add new clients to the FeNix ecosystem
+- **Distributed Resilience**: Each client can operate independently while maintaining sync capabilities
