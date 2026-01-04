@@ -35,10 +35,11 @@ Works from box (local), fnix (SSH), or mac (SSH).
 
 ## Features
 
+- **Auto SSH Setup**: New containers get sshd on unique ports (2201-2299)
 - Color-coded container status (green=running, yellow=stopped)
 - Tab completion for container names
 - 5-second SSH timeout (no hanging if box offline)
-- Container info display (status, image, start time)
+- Container info display (status, image, start time, SSH port)
 
 ## Setup
 
@@ -96,6 +97,8 @@ scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
 - First run pulls image (~1-3 min), subsequent runs enter instantly
 - `/home/pi` shared between host and containers
 - No password prompts on first entry
+- SSH server auto-installed on unique port (2201-2299)
+- `finfo mybox` shows container details including SSH port
 - `fx mybox` or `fxq mybox` destroys container
 
 ## Environment Variables

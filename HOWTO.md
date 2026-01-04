@@ -88,6 +88,7 @@ fe nonexistent echo hello
 - **Persistent**: Survives reboots until destroyed
 - **Ubuntu 24.04** (via `f`) or **Kali** (via `k`)
 - **Host network**: Containers share box's network
+- **SSH enabled**: Each container has sshd on unique port (2201-2299)
 
 ## Typical Workflow
 

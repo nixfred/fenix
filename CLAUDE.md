@@ -33,8 +33,8 @@ fnix/mac (remote machines)
 └── SSH to box                 # commands execute remotely
 
 Containers (on box)
-├── {name}  # ubuntu:24.04 (via f)
-└── {name}  # kalilinux/kali-last-release (via k)
+├── {name}  # ubuntu:24.04 (via f), sshd on port 2201+
+└── {name}  # kalilinux/kali-last-release (via k), sshd on port 2201+
 ```
 
 ## Remote Execution
@@ -68,6 +68,16 @@ Distrobox prompts for password on first entry. Skip by mounting marker file:
 touch /tmp/.nopasswd
 --volume /tmp/.nopasswd:/run/.nopasswd:ro
 ```
+
+## Auto SSH Setup
+
+New containers automatically get sshd installed on unique ports (2201-2299):
+
+1. `_fenix_next_port()` finds first available port
+2. `_fenix_setup_ssh()` installs openssh-server and configures port
+3. sshd starts automatically after container creation
+
+Use `finfo {name}` to see the SSH port for a container.
 
 ## Key Flags
 

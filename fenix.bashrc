@@ -44,12 +44,41 @@ _fenix_containers() {
     _fenix_q "$_FENIX_DB list" 2>/dev/null | awk -F'|' 'NR>1 {gsub(/^ +| +$/, "", $2); print $2}'
 }
 
+# Find next available SSH port (2201-2299)
+_fenix_next_port() {
+    local used_ports=$(_fenix_q "ss -tln | grep -oP ':220[0-9]|:22[1-9][0-9]' | tr -d ':' | sort -u" 2>/dev/null)
+    for port in $(seq 2201 2299); do
+        echo "$used_ports" | grep -qx "$port" || { echo "$port"; return; }
+    done
+    echo "2201"  # fallback
+}
+
+# Setup SSH in container (called after creation)
+_fenix_setup_ssh() {
+    local name="$1"
+    local port=$(_fenix_next_port)
+    echo "Setting up SSH on port $port..."
+    _fenix_q "docker exec '$name' bash -c '
+        apt-get update -qq &&
+        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-server >/dev/null 2>&1 &&
+        sed -i \"s/^#Port 22\$/Port $port/\" /etc/ssh/sshd_config &&
+        sed -i \"s/^Port 22\$/Port $port/\" /etc/ssh/sshd_config &&
+        mkdir -p /run/sshd &&
+        /usr/sbin/sshd
+    '" 2>/dev/null && echo -e "${_C_GREEN}SSH ready: ssh -p $port $FENIX_HOST${_C_RESET}"
+}
+
 # f [name] - Ubuntu container
 f() {
     [[ -z "$1" ]] && { fl; return; }
+    local is_new=0
     _fenix_exists "$1" || {
+        is_new=1
         echo "Creating $1..."
         _fenix "touch /tmp/.nopasswd; $_FENIX_DB create -i ubuntu:24.04 -n '$1' --home /home/pi --hostname '$1' --yes --volume /tmp/.nopasswd:/run/.nopasswd:ro"
+        # First enter to initialize container
+        _fenix_q "$_FENIX_DB enter '$1' -- true" 2>/dev/null
+        _fenix_setup_ssh "$1"
     }
     _fenix "$_FENIX_DB enter $1"
 }
@@ -60,6 +89,9 @@ k() {
     _fenix_exists "$1" || {
         echo "Creating $1..."
         _fenix "touch /tmp/.nopasswd; $_FENIX_DB create -i docker.io/kalilinux/kali-last-release -n '$1' --home /home/pi --hostname '$1' --yes --volume /tmp/.nopasswd:/run/.nopasswd:ro"
+        # First enter to initialize container
+        _fenix_q "$_FENIX_DB enter '$1' -- true" 2>/dev/null
+        _fenix_setup_ssh "$1"
     }
     _fenix "$_FENIX_DB enter $1"
 }
