@@ -34,7 +34,7 @@ k() {
     _fenix "$_FENIX_DB enter $1"
 }
 
-# fx [name] - Destroy container
+# fx [name] - Destroy container (interactive)
 fx() {
     local name="$1"
     if [[ -z "$name" ]]; then
@@ -46,4 +46,24 @@ fx() {
     fi
     read -p "Destroy $name? [y/N] " confirm
     [[ "$confirm" =~ ^[Yy]$ ]] && _fenix "$_FENIX_DB rm -f $name" && echo "Done."
+}
+
+# fe [name] [cmd...] - Execute command in container (non-interactive, for scripts/Claude Code)
+fe() {
+    local name="$1"
+    [[ -z "$name" ]] && { echo "Usage: fe <container> <command...>"; return 1; }
+    shift
+    [[ $# -eq 0 ]] && { echo "Usage: fe <container> <command...>"; return 1; }
+    _fenix "$_FENIX_DB enter $name -- $*"
+}
+
+# fl - List containers (non-interactive)
+fl() {
+    _fenix "$_FENIX_DB list"
+}
+
+# fxq [name] - Destroy container quietly (non-interactive, for scripts/Claude Code)
+fxq() {
+    [[ -z "$1" ]] && { echo "Usage: fxq <container>"; return 1; }
+    _fenix "$_FENIX_DB rm -f $1" && echo "Destroyed: $1"
 }

@@ -5,10 +5,16 @@ Ephemeral Linux containers from any machine. Runs on box, accessible from anywhe
 ## Usage
 
 ```bash
+# Interactive (humans)
 f              # list containers
 f mybox        # create/enter ubuntu container
 k pentest      # create/enter kali container
-fx mybox       # destroy container
+fx mybox       # destroy container (prompts)
+
+# Non-interactive (scripts, Claude Code)
+fl             # list containers
+fe mybox pwd   # execute command in container
+fxq mybox      # destroy container (no prompt)
 ```
 
 Works from box (local), fnix (SSH), or mac (SSH).

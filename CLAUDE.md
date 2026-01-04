@@ -70,9 +70,23 @@ distrobox create \
 
 | File | Purpose |
 |------|---------|
-| `fenix.bashrc` | f, k, fx functions |
+| `fenix.bashrc` | Shell functions |
 | `README.md` | User documentation |
 | `CLAUDE.md` | Architecture (this file) |
+| `HOWTO.md` | Claude Code usage guide |
+
+## Commands
+
+| Command | Interactive | Description |
+|---------|-------------|-------------|
+| `f [name]` | Yes | Create/enter Ubuntu container |
+| `k [name]` | Yes | Create/enter Kali container |
+| `fx [name]` | Yes | Destroy container (prompts) |
+| `fl` | No | List containers |
+| `fe <name> <cmd>` | No | Execute command in container |
+| `fxq <name>` | No | Destroy container (no prompt) |
+
+**Claude Code**: Use `fl`, `fe`, `fxq` only (non-interactive).
 
 ## Environment Variables
 
