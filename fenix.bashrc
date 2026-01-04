@@ -122,6 +122,15 @@ finfo() {
     local started=$(echo "$info" | cut -d'|' -f3 | cut -dT -f1)
     local image=$(echo "$info" | cut -d'|' -f4)
 
+    # Check for container's own SSH (must be on non-22 port since host uses 22)
+    local sshport=""
+    if [[ "$status" == "running" ]]; then
+        # Get port from container's sshd_config (if exists and not port 22)
+        sshport=$(_fenix_q "docker exec '$1' grep -oP '^Port \\K[0-9]+' /etc/ssh/sshd_config 2>/dev/null" 2>/dev/null)
+        # Only show if container has custom port (not 22, which is host's)
+        [[ "$sshport" == "22" || -z "$sshport" ]] && sshport=""
+    fi
+
     echo -e "${_C_BLUE}Container:${_C_RESET} $name"
     if [[ "$status" == "running" ]]; then
         echo -e "${_C_BLUE}Status:${_C_RESET}    ${_C_GREEN}$status${_C_RESET}"
@@ -131,6 +140,11 @@ finfo() {
     echo -e "${_C_BLUE}Started:${_C_RESET}   $started"
     echo -e "${_C_BLUE}Image:${_C_RESET}     $image"
     echo -e "${_C_BLUE}Network:${_C_RESET}   host"
+    if [[ -n "$sshport" ]]; then
+        echo -e "${_C_BLUE}SSH:${_C_RESET}       ${_C_GREEN}port $sshport${_C_RESET} (ssh -p $sshport $FENIX_HOST)"
+    else
+        echo -e "${_C_BLUE}SSH:${_C_RESET}       ${_C_YELLOW}not running${_C_RESET}"
+    fi
 }
 
 # fxq [name] - Destroy container quietly (non-interactive)
