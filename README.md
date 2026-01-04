@@ -20,15 +20,15 @@ fx mybox       # destroy container
 source ~/.config/fenix/fenix.bashrc
 ```
 
-### Multi-Machine (Syncthing)
+### Multi-Machine
 
-Sync `~/.config/fenix/` across machines, then add to `.bashrc`:
+On each remote machine, add to `.bashrc`:
 
 ```bash
 source ~/.config/fenix/fenix.bashrc
 ```
 
-All machines get the same functions, always up to date.
+Sync happens automatically via post-commit hook (scp to configured hosts).
 
 ### Requirements
 
@@ -52,11 +52,13 @@ All machines get the same functions, always up to date.
 - Direct container naming (no prefixes)
 - Shared home directory
 - Correct hostname in prompt
-- Syncthing-ready for multi-machine setups
+- Auto-sync to remote machines on commit
 
 ## Development
 
-Edit `fenix.bashrc` in this repo. On commit, post-commit hook copies to `~/.config/fenix/` for Syncthing to distribute.
+Edit `fenix.bashrc` in this repo. On commit, post-commit hook:
+1. Copies to `~/.config/fenix/`
+2. SCPs to fnix (and any other configured hosts)
 
 ## Images
 

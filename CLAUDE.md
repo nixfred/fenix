@@ -64,11 +64,14 @@ distrobox create \
 ```
 ~/Projects/f/fenix.bashrc     # Edit here (git tracked)
         ↓ (post-commit hook)
-~/.config/fenix/fenix.bashrc  # Auto-copied on commit
-        ↓ (Syncthing)
-fnix:~/.config/fenix/         # Synced
-mac:~/.config/fenix/          # Synced
+~/.config/fenix/fenix.bashrc  # Local copy
+        ↓ (scp via post-commit hook)
+fnix:~/.config/fenix/         # Auto-synced on commit
 ```
+
+Post-commit hook (`.git/hooks/post-commit`):
+- Copies to local `~/.config/fenix/`
+- SCPs to fnix (fails gracefully if offline)
 
 All machines source from `~/.config/fenix/fenix.bashrc`
 
