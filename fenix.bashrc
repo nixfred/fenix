@@ -63,6 +63,7 @@ _fenix_setup_ssh() {
         DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-server >/dev/null 2>&1 &&
         sed -i \"s/^#Port 22\$/Port $port/\" /etc/ssh/sshd_config &&
         sed -i \"s/^Port 22\$/Port $port/\" /etc/ssh/sshd_config &&
+        sed -i \"s/^#PubkeyAuthentication yes/PubkeyAuthentication yes/\" /etc/ssh/sshd_config &&
         mkdir -p /run/sshd &&
         /usr/sbin/sshd
     '" 2>/dev/null && echo -e "${_C_GREEN}SSH ready: ssh -p $port $FENIX_HOST${_C_RESET}"
