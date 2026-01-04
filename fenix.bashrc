@@ -3,7 +3,7 @@
 
 FENIX_HOST="${FENIX_HOST:-box}"
 _FENIX_DB="/home/pi/.local/bin/distrobox"
-unalias f k fx 2>/dev/null
+unalias f k fx fl fe fxq 2>/dev/null
 
 # Run on box (locally or via SSH)
 _fenix() {
@@ -14,10 +14,15 @@ _fenix() {
     fi
 }
 
+# Check if container exists (matches NAME column only, not IMAGE)
+_fenix_exists() {
+    _fenix "$_FENIX_DB list" 2>/dev/null | awk -F'|' 'NR>1 {gsub(/^ +| +$/, "", $2); print $2}' | grep -qx "$1"
+}
+
 # f [name] - Ubuntu container
 f() {
     [[ -z "$1" ]] && { _fenix "$_FENIX_DB list"; return; }
-    _fenix "$_FENIX_DB list" 2>/dev/null | grep -qw "$1" || {
+    _fenix_exists "$1" || {
         echo "Creating $1..."
         _fenix "touch /tmp/.nopasswd; $_FENIX_DB create -i ubuntu:24.04 -n '$1' --home /home/pi --hostname '$1' --yes --volume /tmp/.nopasswd:/run/.nopasswd:ro"
     }
@@ -27,7 +32,7 @@ f() {
 # k [name] - Kali container
 k() {
     [[ -z "$1" ]] && { _fenix "$_FENIX_DB list"; return; }
-    _fenix "$_FENIX_DB list" 2>/dev/null | grep -qw "$1" || {
+    _fenix_exists "$1" || {
         echo "Creating $1..."
         _fenix "touch /tmp/.nopasswd; $_FENIX_DB create -i docker.io/kalilinux/kali-last-release -n '$1' --home /home/pi --hostname '$1' --yes --volume /tmp/.nopasswd:/run/.nopasswd:ro"
     }
@@ -55,7 +60,7 @@ fe() {
     shift
     [[ $# -eq 0 ]] && { echo "Usage: fe <container> <command...>"; return 1; }
     # Check container exists (fail fast, no prompts)
-    _fenix "$_FENIX_DB list" 2>/dev/null | grep -qw "$name" || {
+    _fenix_exists "$name" || {
         echo "Error: container '$name' does not exist. Create with: f $name"
         return 1
     }
@@ -70,5 +75,9 @@ fl() {
 # fxq [name] - Destroy container quietly (non-interactive, for scripts/Claude Code)
 fxq() {
     [[ -z "$1" ]] && { echo "Usage: fxq <container>"; return 1; }
+    _fenix_exists "$1" || {
+        echo "Error: container '$1' does not exist"
+        return 1
+    }
     _fenix "$_FENIX_DB rm -f $1" && echo "Destroyed: $1"
 }
