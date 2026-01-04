@@ -64,9 +64,15 @@ _fenix_setup_ssh() {
         sed -i \"s/^#Port 22\$/Port $port/\" /etc/ssh/sshd_config &&
         sed -i \"s/^Port 22\$/Port $port/\" /etc/ssh/sshd_config &&
         sed -i \"s/^#PubkeyAuthentication yes/PubkeyAuthentication yes/\" /etc/ssh/sshd_config &&
-        mkdir -p /run/sshd &&
-        /usr/sbin/sshd
-    '" 2>/dev/null && echo -e "${_C_GREEN}SSH ready: ssh -p $port $FENIX_HOST${_C_RESET}"
+        mkdir -p /run/sshd
+    '" 2>/dev/null
+    # Copy box's host keys so all containers have same fingerprint
+    docker cp /etc/ssh/ssh_host_ed25519_key "$name:/etc/ssh/" 2>/dev/null
+    docker cp /etc/ssh/ssh_host_ed25519_key.pub "$name:/etc/ssh/" 2>/dev/null
+    docker cp /etc/ssh/ssh_host_rsa_key "$name:/etc/ssh/" 2>/dev/null
+    docker cp /etc/ssh/ssh_host_rsa_key.pub "$name:/etc/ssh/" 2>/dev/null
+    _fenix_q "docker exec '$name' chmod 600 /etc/ssh/ssh_host_*_key && docker exec '$name' /usr/sbin/sshd" 2>/dev/null
+    echo -e "${_C_GREEN}SSH ready: ssh -p $port $FENIX_HOST${_C_RESET}"
 }
 
 # f [name] - Ubuntu container
