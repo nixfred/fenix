@@ -6,14 +6,15 @@ Guide for AI assistants (Claude Code) to use fenix containers.
 
 | Command | Interactive | Use |
 |---------|-------------|-----|
-| `fl` | No | List containers |
+| `fl` | No | List containers (colored) |
 | `fe <name> <cmd>` | No | Execute command in container |
 | `fxq <name>` | No | Destroy container (no prompt) |
+| `finfo <name>` | No | Show container info |
 | `f <name>` | Yes | Create/enter Ubuntu (humans only) |
 | `k <name>` | Yes | Create/enter Kali (humans only) |
 | `fx <name>` | Yes | Destroy with prompt (humans only) |
 
-**Claude Code can only use:** `fl`, `fe`, `fxq`
+**Claude Code can only use:** `fl`, `fe`, `fxq`, `finfo`
 
 ## When to Use Containers
 
@@ -37,6 +38,11 @@ Guide for AI assistants (Claude Code) to use fenix containers.
 ### List containers
 ```bash
 fl
+```
+
+### Get container info
+```bash
+finfo packages
 ```
 
 ### Run command in container
@@ -81,6 +87,7 @@ fe nonexistent echo hello
 - **Isolated system**: Package installs don't affect host
 - **Persistent**: Survives reboots until destroyed
 - **Ubuntu 24.04** (via `f`) or **Kali** (via `k`)
+- **Host network**: Containers share box's network
 
 ## Typical Workflow
 
@@ -100,6 +107,7 @@ fe nonexistent echo hello
 - First command in new container may be slow (initialization)
 - Container must exist before `fe` can use it
 - Commands run as user `pi` inside container
+- SSH timeout is 5 seconds (fails fast if box offline)
 
 ## Alternative: Direct Host Execution
 

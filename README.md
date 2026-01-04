@@ -6,13 +6,14 @@ Ephemeral Linux containers from any machine. Runs on box, accessible from anywhe
 
 ```bash
 # Interactive (humans)
-f              # list containers
+f              # list containers (colored)
 f mybox        # create/enter Ubuntu container
 k pentest      # create/enter Kali container
 fx mybox       # destroy container (prompts)
+finfo mybox    # show container info
 
 # Non-interactive (scripts, Claude Code)
-fl             # list containers
+fl             # list containers (colored)
 fe mybox pwd   # execute command in container
 fxq mybox      # destroy container (no prompt)
 ```
@@ -23,11 +24,21 @@ fxq mybox      # destroy container (no prompt)
 | `f <name>` | Yes | Create/enter Ubuntu 24.04 container |
 | `k <name>` | Yes | Create/enter Kali container |
 | `fx <name>` | Yes | Destroy container (confirms) |
+| `finfo <name>` | No | Show container info |
 | `fl` | No | List containers |
 | `fe <name> <cmd>` | No | Execute command in container |
 | `fxq <name>` | No | Destroy container (no confirm) |
 
 Works from box (local), fnix (SSH), or mac (SSH).
+
+**Tab completion** supported for all commands.
+
+## Features
+
+- Color-coded container status (green=running, yellow=stopped)
+- Tab completion for container names
+- 5-second SSH timeout (no hanging if box offline)
+- Container info display (status, image, start time)
 
 ## Setup
 
@@ -92,6 +103,7 @@ scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FENIX_HOST` | `box` | Linux host running distrobox |
+| `_FENIX_TIMEOUT` | `5` | SSH connection timeout (seconds) |
 
 ## Images
 

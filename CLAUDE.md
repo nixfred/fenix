@@ -15,8 +15,9 @@ Lightweight container management using distrobox. Runs on box, accessible via SS
 | `fl` | No | List containers |
 | `fe <name> <cmd>` | No | Execute command in container |
 | `fxq <name>` | No | Destroy container (no confirm) |
+| `finfo <name>` | No | Show container info |
 
-**Claude Code**: Use `fl`, `fe`, `fxq` only (non-interactive). See HOWTO.md.
+**Claude Code**: Use `fl`, `fe`, `fxq`, `finfo` only (non-interactive). See HOWTO.md.
 
 ## Architecture
 
@@ -47,7 +48,7 @@ _fenix() {
     if [[ "$(hostname)" == "$FENIX_HOST" ]]; then
         eval "$1"
     else
-        ssh -t "$FENIX_HOST" "$1"
+        ssh -t -o ConnectTimeout=$_FENIX_TIMEOUT "$FENIX_HOST" "$1"
     fi
 }
 ```
@@ -95,6 +96,7 @@ distrobox create \
 |----------|---------|-------------|
 | `FENIX_HOST` | `box` | Host running distrobox |
 | `_FENIX_DB` | `/home/pi/.local/bin/distrobox` | Distrobox path (internal) |
+| `_FENIX_TIMEOUT` | `5` | SSH connection timeout (seconds) |
 
 ## Sync Workflow
 

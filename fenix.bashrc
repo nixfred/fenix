@@ -3,25 +3,50 @@
 
 FENIX_HOST="${FENIX_HOST:-box}"
 _FENIX_DB="/home/pi/.local/bin/distrobox"
-unalias f k fx fl fe fxq 2>/dev/null
+_FENIX_TIMEOUT=5
+unalias f k fx fl fe fxq finfo 2>/dev/null
 
-# Run on box (locally or via SSH)
+# Colors
+_C_GREEN='\033[0;32m'
+_C_RED='\033[0;31m'
+_C_YELLOW='\033[0;33m'
+_C_BLUE='\033[0;34m'
+_C_RESET='\033[0m'
+
+# Run on box (locally or via SSH with timeout)
 _fenix() {
     if [[ "$(hostname)" == "$FENIX_HOST" ]]; then
         eval "$1"
     else
-        ssh -t "$FENIX_HOST" "$1"
+        ssh -t -o ConnectTimeout=$_FENIX_TIMEOUT "$FENIX_HOST" "$1" 2>/dev/null || {
+            echo -e "${_C_RED}Error: Cannot connect to $FENIX_HOST (timeout ${_FENIX_TIMEOUT}s)${_C_RESET}"
+            return 1
+        }
+    fi
+}
+
+# Run on box without TTY (for parsing output)
+_fenix_q() {
+    if [[ "$(hostname)" == "$FENIX_HOST" ]]; then
+        eval "$1"
+    else
+        ssh -o ConnectTimeout=$_FENIX_TIMEOUT "$FENIX_HOST" "$1" 2>/dev/null || return 1
     fi
 }
 
 # Check if container exists (matches NAME column only, not IMAGE)
 _fenix_exists() {
-    _fenix "$_FENIX_DB list" 2>/dev/null | awk -F'|' 'NR>1 {gsub(/^ +| +$/, "", $2); print $2}' | grep -qx "$1"
+    _fenix_q "$_FENIX_DB list" 2>/dev/null | awk -F'|' 'NR>1 {gsub(/^ +| +$/, "", $2); print $2}' | grep -qx "$1"
+}
+
+# Get container names for completion
+_fenix_containers() {
+    _fenix_q "$_FENIX_DB list" 2>/dev/null | awk -F'|' 'NR>1 {gsub(/^ +| +$/, "", $2); print $2}'
 }
 
 # f [name] - Ubuntu container
 f() {
-    [[ -z "$1" ]] && { _fenix "$_FENIX_DB list"; return; }
+    [[ -z "$1" ]] && { fl; return; }
     _fenix_exists "$1" || {
         echo "Creating $1..."
         _fenix "touch /tmp/.nopasswd; $_FENIX_DB create -i ubuntu:24.04 -n '$1' --home /home/pi --hostname '$1' --yes --volume /tmp/.nopasswd:/run/.nopasswd:ro"
@@ -31,7 +56,7 @@ f() {
 
 # k [name] - Kali container
 k() {
-    [[ -z "$1" ]] && { _fenix "$_FENIX_DB list"; return; }
+    [[ -z "$1" ]] && { fl; return; }
     _fenix_exists "$1" || {
         echo "Creating $1..."
         _fenix "touch /tmp/.nopasswd; $_FENIX_DB create -i docker.io/kalilinux/kali-last-release -n '$1' --home /home/pi --hostname '$1' --yes --volume /tmp/.nopasswd:/run/.nopasswd:ro"
@@ -44,7 +69,7 @@ fx() {
     local name="$1"
     if [[ -z "$name" ]]; then
         echo "Containers:"
-        _fenix "$_FENIX_DB list"
+        fl
         echo ""
         read -p "Destroy: " name
         [[ -z "$name" ]] && return
@@ -53,13 +78,12 @@ fx() {
     [[ "$confirm" =~ ^[Yy]$ ]] && _fenix "$_FENIX_DB rm -f $name" && echo "Done."
 }
 
-# fe [name] [cmd...] - Execute command in container (non-interactive, for scripts/Claude Code)
+# fe [name] [cmd...] - Execute command in container (non-interactive)
 fe() {
     local name="$1"
     [[ -z "$name" ]] && { echo "Usage: fe <container> <command...>"; return 1; }
     shift
     [[ $# -eq 0 ]] && { echo "Usage: fe <container> <command...>"; return 1; }
-    # Check container exists (fail fast, no prompts)
     _fenix_exists "$name" || {
         echo "Error: container '$name' does not exist. Create with: f $name"
         return 1
@@ -67,12 +91,49 @@ fe() {
     _fenix "$_FENIX_DB enter $name -- $*"
 }
 
-# fl - List containers (non-interactive)
+# fl - List containers with color
 fl() {
-    _fenix "$_FENIX_DB list"
+    local output
+    output=$(_fenix_q "$_FENIX_DB list" 2>/dev/null) || return 1
+    echo "$output" | while IFS= read -r line; do
+        if [[ "$line" == *"| Up "* ]]; then
+            echo -e "${_C_GREEN}${line}${_C_RESET}"
+        elif [[ "$line" == *"| Exited"* ]] || [[ "$line" == *"| Created"* ]]; then
+            echo -e "${_C_YELLOW}${line}${_C_RESET}"
+        elif [[ "$line" == "ID"* ]]; then
+            echo -e "${_C_BLUE}${line}${_C_RESET}"
+        else
+            echo "$line"
+        fi
+    done
 }
 
-# fxq [name] - Destroy container quietly (non-interactive, for scripts/Claude Code)
+# finfo [name] - Container info
+finfo() {
+    [[ -z "$1" ]] && { echo "Usage: finfo <container>"; return 1; }
+    _fenix_exists "$1" || {
+        echo "Error: container '$1' does not exist"
+        return 1
+    }
+    local info
+    info=$(_fenix_q "docker inspect '$1' --format '{{.Name}}|{{.State.Status}}|{{.State.StartedAt}}|{{.Config.Image}}'" 2>/dev/null)
+    local name=$(echo "$info" | cut -d'|' -f1 | tr -d '/')
+    local status=$(echo "$info" | cut -d'|' -f2)
+    local started=$(echo "$info" | cut -d'|' -f3 | cut -dT -f1)
+    local image=$(echo "$info" | cut -d'|' -f4)
+
+    echo -e "${_C_BLUE}Container:${_C_RESET} $name"
+    if [[ "$status" == "running" ]]; then
+        echo -e "${_C_BLUE}Status:${_C_RESET}    ${_C_GREEN}$status${_C_RESET}"
+    else
+        echo -e "${_C_BLUE}Status:${_C_RESET}    ${_C_YELLOW}$status${_C_RESET}"
+    fi
+    echo -e "${_C_BLUE}Started:${_C_RESET}   $started"
+    echo -e "${_C_BLUE}Image:${_C_RESET}     $image"
+    echo -e "${_C_BLUE}Network:${_C_RESET}   host"
+}
+
+# fxq [name] - Destroy container quietly (non-interactive)
 fxq() {
     [[ -z "$1" ]] && { echo "Usage: fxq <container>"; return 1; }
     _fenix_exists "$1" || {
@@ -81,3 +142,11 @@ fxq() {
     }
     _fenix "$_FENIX_DB rm -f $1" && echo "Destroyed: $1"
 }
+
+# Tab completion
+_fenix_complete() {
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    COMPREPLY=($(compgen -W "$(_fenix_containers 2>/dev/null)" -- "$cur"))
+}
+
+complete -F _fenix_complete f k fx fe fxq finfo
