@@ -59,6 +59,19 @@ distrobox create \
 
 - `FENIX_DB` - distrobox path (default: ~/.local/bin/distrobox)
 
+## Sync Workflow
+
+```
+~/Projects/f/fenix.bashrc     # Edit here (git tracked)
+        ↓ (post-commit hook)
+~/.config/fenix/fenix.bashrc  # Auto-copied on commit
+        ↓ (Syncthing)
+fnix:~/.config/fenix/         # Synced
+mac:~/.config/fenix/          # Synced
+```
+
+All machines source from `~/.config/fenix/fenix.bashrc`
+
 ## Troubleshooting
 
 ### Password prompt still appears
