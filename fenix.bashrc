@@ -54,6 +54,11 @@ fe() {
     [[ -z "$name" ]] && { echo "Usage: fe <container> <command...>"; return 1; }
     shift
     [[ $# -eq 0 ]] && { echo "Usage: fe <container> <command...>"; return 1; }
+    # Check container exists (fail fast, no prompts)
+    _fenix "$_FENIX_DB list" 2>/dev/null | grep -qw "$name" || {
+        echo "Error: container '$name' does not exist. Create with: f $name"
+        return 1
+    }
     _fenix "$_FENIX_DB enter $name -- $*"
 }
 
