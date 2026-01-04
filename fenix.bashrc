@@ -4,14 +4,17 @@
 FENIX_DB="${FENIX_DB:-$HOME/.local/bin/distrobox}"
 unalias f k fx 2>/dev/null
 
-# f [name] - Ubuntu container (list if no name, create/enter if name given)
+# f [name] - Ubuntu container
 f() {
     [[ -z "$1" ]] && { $FENIX_DB list; return; }
     if $FENIX_DB list 2>/dev/null | grep -qw "$1"; then
         $FENIX_DB enter "$1"
     else
         echo "Creating $1..."
-        $FENIX_DB create -i ubuntu:24.04 -n "$1" --home /home/pi --hostname "$1" --yes
+        # Mount /tmp/.nopasswd to /run/.nopasswd to skip password setup
+        touch /tmp/.nopasswd 2>/dev/null
+        $FENIX_DB create -i ubuntu:24.04 -n "$1" --home /home/pi --hostname "$1" --yes \
+            --volume /tmp/.nopasswd:/run/.nopasswd:ro
         $FENIX_DB enter "$1"
     fi
 }
@@ -23,7 +26,10 @@ k() {
         $FENIX_DB enter "$1"
     else
         echo "Creating $1..."
-        $FENIX_DB create -i docker.io/kalilinux/kali-last-release -n "$1" --home /home/pi --hostname "$1" --yes
+        # Mount /tmp/.nopasswd to /run/.nopasswd to skip password setup
+        touch /tmp/.nopasswd 2>/dev/null
+        $FENIX_DB create -i docker.io/kalilinux/kali-last-release -n "$1" --home /home/pi --hostname "$1" --yes \
+            --volume /tmp/.nopasswd:/run/.nopasswd:ro
         $FENIX_DB enter "$1"
     fi
 }
