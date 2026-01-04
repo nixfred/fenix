@@ -11,6 +11,7 @@ Lightweight container management using distrobox. Runs on box, accessible via SS
 | `f` | Yes | List containers |
 | `f <name>` | Yes | Create/enter Ubuntu 24.04 container |
 | `k <name>` | Yes | Create/enter Kali container |
+| `fssh <name>` | Yes | SSH into container |
 | `fx <name>` | Yes | Destroy container (confirms) |
 | `fl` | No | List containers |
 | `fe <name> <cmd>` | No | Execute command in container |

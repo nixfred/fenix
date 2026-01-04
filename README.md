@@ -9,6 +9,7 @@ Ephemeral Linux containers from any machine. Runs on box, accessible from anywhe
 f              # list containers (colored)
 f mybox        # create/enter Ubuntu container
 k pentest      # create/enter Kali container
+fssh mybox     # SSH into container
 fx mybox       # destroy container (prompts)
 finfo mybox    # show container info
 
@@ -23,6 +24,7 @@ fxq mybox      # destroy container (no prompt)
 | `f` | Yes | List containers |
 | `f <name>` | Yes | Create/enter Ubuntu 24.04 container |
 | `k <name>` | Yes | Create/enter Kali container |
+| `fssh <name>` | Yes | SSH into container |
 | `fx <name>` | Yes | Destroy container (confirms) |
 | `finfo <name>` | No | Show container info |
 | `fl` | No | List containers |

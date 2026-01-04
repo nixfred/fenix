@@ -179,6 +179,21 @@ finfo() {
     fi
 }
 
+# fssh [name] - SSH into container
+fssh() {
+    [[ -z "$1" ]] && { echo "Usage: fssh <container>"; return 1; }
+    _fenix_exists "$1" || {
+        echo "Error: container '$1' does not exist"
+        return 1
+    }
+    local port=$(_fenix_q "docker exec '$1' grep -oP '^Port \\K[0-9]+' /etc/ssh/sshd_config 2>/dev/null" 2>/dev/null)
+    [[ -z "$port" || "$port" == "22" ]] && {
+        echo "Error: SSH not configured for '$1'. Run: _fenix_setup_ssh $1"
+        return 1
+    }
+    ssh -p "$port" "$FENIX_HOST"
+}
+
 # fxq [name] - Destroy container quietly (non-interactive)
 fxq() {
     [[ -z "$1" ]] && { echo "Usage: fxq <container>"; return 1; }
@@ -195,4 +210,4 @@ _fenix_complete() {
     COMPREPLY=($(compgen -W "$(_fenix_containers 2>/dev/null)" -- "$cur"))
 }
 
-complete -F _fenix_complete f k fx fe fxq finfo
+complete -F _fenix_complete f k fx fe fxq finfo fssh
