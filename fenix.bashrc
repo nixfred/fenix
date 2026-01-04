@@ -67,11 +67,14 @@ _fenix_setup_ssh() {
         mkdir -p /run/sshd
     '" 2>/dev/null
     # Copy box's host keys so all containers have same fingerprint
+    docker cp /etc/ssh/ssh_host_ecdsa_key "$name:/etc/ssh/" 2>/dev/null
+    docker cp /etc/ssh/ssh_host_ecdsa_key.pub "$name:/etc/ssh/" 2>/dev/null
     docker cp /etc/ssh/ssh_host_ed25519_key "$name:/etc/ssh/" 2>/dev/null
     docker cp /etc/ssh/ssh_host_ed25519_key.pub "$name:/etc/ssh/" 2>/dev/null
     docker cp /etc/ssh/ssh_host_rsa_key "$name:/etc/ssh/" 2>/dev/null
     docker cp /etc/ssh/ssh_host_rsa_key.pub "$name:/etc/ssh/" 2>/dev/null
-    _fenix_q "docker exec '$name' chmod 600 /etc/ssh/ssh_host_*_key && docker exec '$name' /usr/sbin/sshd" 2>/dev/null
+    docker exec "$name" chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null
+    docker exec "$name" /usr/sbin/sshd 2>/dev/null
     echo -e "${_C_GREEN}SSH ready: ssh -p $port $FENIX_HOST${_C_RESET}"
 }
 
