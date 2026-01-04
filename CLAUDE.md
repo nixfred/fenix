@@ -2,84 +2,121 @@
 
 ## Overview
 
-Lightweight container management using distrobox. Three functions: `f` (ubuntu), `k` (kali), `fx` (destroy).
+Lightweight container management using distrobox. Three functions: `f` (ubuntu), `k` (kali), `fx` (destroy). Runs on box, accessible via SSH from fnix/mac.
 
 ## Architecture
 
 ```
 box (Linux host)
 ├── ~/.local/bin/distrobox     # container runtime
-├── ~/Projects/f/fenix.bashrc  # functions
+├── ~/Projects/f/              # git repo (source of truth)
+├── ~/.config/fenix/           # synced config
 └── /home/pi                   # shared with containers
 
-Containers
+fnix/mac (remote machines)
+├── ~/.config/fenix/           # synced via Syncthing
+└── SSH to box                 # commands execute remotely
+
+Containers (on box)
 ├── {name}  # ubuntu:24.04 (via f)
 └── {name}  # kalilinux/kali-last-release (via k)
 ```
 
+## Remote Execution
+
+The `_fenix()` helper detects hostname:
+- On `box`: runs distrobox locally
+- On `fnix`/`mac`: SSH to box with TTY allocation
+
+```bash
+_fenix() {
+    if [[ "$(hostname)" == "$FENIX_HOST" ]]; then
+        eval "$1"
+    else
+        ssh -t "$FENIX_HOST" "$1"
+    fi
+}
+```
+
 ## Container Naming
 
-Container name = what you pass in. No prefixes.
+Container name = argument passed. No prefixes.
 
 - `f dev` → container named `dev`
 - `k hack` → container named `hack`
 
-## Key Implementation Details
+## Password Prompt Fix
 
-### Password Prompt Fix
-
-Distrobox normally prompts for password on first entry. We skip this by mounting a marker file:
+Distrobox prompts for password on first entry. Skip by mounting marker file:
 
 ```bash
 touch /tmp/.nopasswd
 --volume /tmp/.nopasswd:/run/.nopasswd:ro
 ```
 
-This tells distrobox-init to skip password setup (same as `--absolutely-disable-root-password-i-am-really-positively-sure` but works reliably).
-
-### Key Flags
+## Key Flags
 
 ```bash
 distrobox create \
-  -i ubuntu:24.04 \                        # image
-  -n {name} \                              # container name
-  --home /home/pi \                        # mount home
-  --hostname {name} \                      # prompt hostname
-  --volume /tmp/.nopasswd:/run/.nopasswd:ro \  # skip password
-  --yes                                    # no prompts
+  -i ubuntu:24.04 \                           # image
+  -n {name} \                                 # container name
+  --home /home/pi \                           # mount home
+  --hostname {name} \                         # prompt hostname
+  --volume /tmp/.nopasswd:/run/.nopasswd:ro \ # skip password
+  --yes                                       # no prompts
 ```
 
 ## Files
 
-- `fenix.bashrc` - f, k, fx functions
-- `README.md` - user docs
-- `CLAUDE.md` - this file
+| File | Purpose |
+|------|---------|
+| `fenix.bashrc` | f, k, fx functions |
+| `README.md` | User documentation |
+| `CLAUDE.md` | Architecture (this file) |
 
-## Environment
+## Environment Variables
 
-- `FENIX_DB` - distrobox path (default: ~/.local/bin/distrobox)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FENIX_HOST` | `box` | Host running distrobox |
+| `_FENIX_DB` | `/home/pi/.local/bin/distrobox` | Distrobox path (internal) |
 
 ## Sync Workflow
 
 ```
-~/Projects/f/fenix.bashrc     # Edit here (git tracked)
-        ↓ (post-commit hook)
-~/.config/fenix/fenix.bashrc  # Local copy
-        ↓ (scp via post-commit hook)
-fnix:~/.config/fenix/         # Auto-synced on commit
+~/Projects/f/fenix.bashrc        # Edit here (git tracked)
+        ↓ (manual copy or post-commit hook)
+~/.config/fenix/fenix.bashrc     # Local config on box
+        ↓ (Syncthing)
+fnix:~/.config/fenix/            # Synced
+mac:~/.config/fenix/             # Synced
 ```
 
-Post-commit hook (`.git/hooks/post-commit`):
-- Copies to local `~/.config/fenix/`
-- SCPs to fnix (fails gracefully if offline)
+### Syncthing Configuration
 
-All machines source from `~/.config/fenix/fenix.bashrc`
+1. **On box**: Share `~/.config/fenix` folder
+   - Folder ID: `fenix`
+   - Folder Path: `/home/pi/.config/fenix`
+   - Share with: fnix, mac devices
+
+2. **On fnix/mac**: Accept folder share from box
+   - Folder Path: `~/.config/fenix`
+
+3. **Sync Direction**: Send Only from box (box is source of truth)
+
+### Manual Sync
+
+```bash
+# From box
+scp ~/.config/fenix/fenix.bashrc fnix:~/.config/fenix/
+scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
+```
 
 ## Troubleshooting
 
 ### Password prompt still appears
 
-The marker file `/var/tmp/.pi.passwd.initialize` triggers the prompt. Fix:
+Remove the marker file inside container:
 
 ```bash
 ~/.local/bin/distrobox enter {name} -- rm -f /var/tmp/.pi.passwd.initialize
@@ -87,8 +124,22 @@ The marker file `/var/tmp/.pi.passwd.initialize` triggers the prompt. Fix:
 
 ### Container won't start
 
-Check docker logs:
-
 ```bash
 docker logs {name}
+```
+
+### SSH connection fails from fnix/mac
+
+Ensure passwordless SSH to box:
+
+```bash
+ssh-copy-id box
+```
+
+### Commands not found after sync
+
+Re-source the config:
+
+```bash
+source ~/.config/fenix/fenix.bashrc
 ```
