@@ -112,29 +112,23 @@ distrobox create \
 
 ```
 ~/Projects/f/fenix.bashrc        # Edit here (git tracked)
-        ↓ (manual copy or post-commit hook)
+        ↓ (post-commit hook)
 ~/.config/fenix/fenix.bashrc     # Local config on box
-        ↓ (Syncthing)
+        ↓ (scp via post-commit hook)
 fnix:~/.config/fenix/            # Synced
 mac:~/.config/fenix/             # Synced
 ```
 
-### Syncthing Configuration
+### Post-Commit Hook
 
-1. **On box**: Share `~/.config/fenix` folder
-   - Folder ID: `fenix`
-   - Folder Path: `/home/pi/.config/fenix`
-   - Share with: fnix, mac devices
-
-2. **On fnix/mac**: Accept folder share from box
-   - Folder Path: `~/.config/fenix`
-
-3. **Sync Direction**: Send Only from box (box is source of truth)
+The `.git/hooks/post-commit` automatically syncs on every commit:
+1. Copies to `~/.config/fenix/` on box
+2. SCPs to fnix and mac
 
 ### Manual Sync
 
 ```bash
-# From box
+# From box (if needed)
 scp ~/.config/fenix/fenix.bashrc fnix:~/.config/fenix/
 scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
 ```

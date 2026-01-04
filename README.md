@@ -71,20 +71,14 @@ mkdir -p ~/.config/fenix
 echo 'source ~/.config/fenix/fenix.bashrc 2>/dev/null' >> ~/.bashrc
 ```
 
-### Syncthing Setup
+### Sync (Automatic)
 
-Sync `~/.config/fenix/` across all machines:
-
-1. On box: Add `~/.config/fenix` as shared folder
-2. On fnix/mac: Accept folder share from box
-3. Set sync type to "Send Only" from box
-
-Folder ID: `fenix`
+A post-commit hook syncs `fenix.bashrc` to fnix and mac on every commit.
 
 ### Manual Sync
 
 ```bash
-# From box
+# From box (if needed)
 scp ~/.config/fenix/fenix.bashrc fnix:~/.config/fenix/
 scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
 ```
