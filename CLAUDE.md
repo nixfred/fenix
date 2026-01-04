@@ -2,7 +2,21 @@
 
 ## Overview
 
-Lightweight container management using distrobox. Three functions: `f` (ubuntu), `k` (kali), `fx` (destroy). Runs on box, accessible via SSH from fnix/mac.
+Lightweight container management using distrobox. Runs on box, accessible via SSH from fnix/mac.
+
+## Commands
+
+| Command | Interactive | Description |
+|---------|-------------|-------------|
+| `f` | Yes | List containers |
+| `f <name>` | Yes | Create/enter Ubuntu 24.04 container |
+| `k <name>` | Yes | Create/enter Kali container |
+| `fx <name>` | Yes | Destroy container (confirms) |
+| `fl` | No | List containers |
+| `fe <name> <cmd>` | No | Execute command in container |
+| `fxq <name>` | No | Destroy container (no confirm) |
+
+**Claude Code**: Use `fl`, `fe`, `fxq` only (non-interactive). See HOWTO.md.
 
 ## Architecture
 
@@ -74,19 +88,6 @@ distrobox create \
 | `README.md` | User documentation |
 | `CLAUDE.md` | Architecture (this file) |
 | `HOWTO.md` | Claude Code usage guide |
-
-## Commands
-
-| Command | Interactive | Description |
-|---------|-------------|-------------|
-| `f [name]` | Yes | Create/enter Ubuntu container |
-| `k [name]` | Yes | Create/enter Kali container |
-| `fx [name]` | Yes | Destroy container (prompts) |
-| `fl` | No | List containers |
-| `fe <name> <cmd>` | No | Execute command in container |
-| `fxq <name>` | No | Destroy container (no prompt) |
-
-**Claude Code**: Use `fl`, `fe`, `fxq` only (non-interactive).
 
 ## Environment Variables
 

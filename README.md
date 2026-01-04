@@ -2,13 +2,13 @@
 
 Ephemeral Linux containers from any machine. Runs on box, accessible from anywhere.
 
-## Usage
+## Commands
 
 ```bash
 # Interactive (humans)
 f              # list containers
-f mybox        # create/enter ubuntu container
-k pentest      # create/enter kali container
+f mybox        # create/enter Ubuntu container
+k pentest      # create/enter Kali container
 fx mybox       # destroy container (prompts)
 
 # Non-interactive (scripts, Claude Code)
@@ -16,6 +16,16 @@ fl             # list containers
 fe mybox pwd   # execute command in container
 fxq mybox      # destroy container (no prompt)
 ```
+
+| Command | Interactive | Description |
+|---------|-------------|-------------|
+| `f` | Yes | List containers |
+| `f <name>` | Yes | Create/enter Ubuntu 24.04 container |
+| `k <name>` | Yes | Create/enter Kali container |
+| `fx <name>` | Yes | Destroy container (confirms) |
+| `fl` | No | List containers |
+| `fe <name> <cmd>` | No | Execute command in container |
+| `fxq <name>` | No | Destroy container (no confirm) |
 
 Works from box (local), fnix (SSH), or mac (SSH).
 
@@ -31,7 +41,7 @@ Requirements:
 # Clone repo
 git clone <repo> ~/Projects/f
 
-# Create config dir and link
+# Create config dir and copy
 mkdir -p ~/.config/fenix
 cp ~/Projects/f/fenix.bashrc ~/.config/fenix/
 
@@ -53,29 +63,29 @@ echo 'source ~/.config/fenix/fenix.bashrc 2>/dev/null' >> ~/.bashrc
 
 Sync `~/.config/fenix/` across all machines:
 
-1. On box: Add `~/.config/fenix` as shared folder in Syncthing
-2. On fnix/mac: Add box as remote device, accept folder share
-3. Set sync type to "Send Only" from box (box is source of truth)
+1. On box: Add `~/.config/fenix` as shared folder
+2. On fnix/mac: Accept folder share from box
+3. Set sync type to "Send Only" from box
 
-Folder ID suggestion: `fenix`
+Folder ID: `fenix`
 
-### Manual Sync (alternative)
+### Manual Sync
 
 ```bash
-# From box, push to remotes
+# From box
 scp ~/.config/fenix/fenix.bashrc fnix:~/.config/fenix/
 scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
 ```
 
 ## How it works
 
-- Commands run on box (locally or via SSH from remote machines)
-- `f mybox` creates ubuntu:24.04 container named `mybox`
-- `k pentest` creates kali container named `pentest`
+- Commands execute on box (locally or via SSH from remote machines)
+- `f mybox` creates Ubuntu 24.04 container named `mybox`
+- `k pentest` creates Kali container named `pentest`
 - First run pulls image (~1-3 min), subsequent runs enter instantly
 - `/home/pi` shared between host and containers
 - No password prompts on first entry
-- `fx mybox` destroys container completely
+- `fx mybox` or `fxq mybox` destroys container
 
 ## Environment Variables
 

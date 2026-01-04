@@ -2,6 +2,19 @@
 
 Guide for AI assistants (Claude Code) to use fenix containers.
 
+## Available Commands
+
+| Command | Interactive | Use |
+|---------|-------------|-----|
+| `fl` | No | List containers |
+| `fe <name> <cmd>` | No | Execute command in container |
+| `fxq <name>` | No | Destroy container (no prompt) |
+| `f <name>` | Yes | Create/enter Ubuntu (humans only) |
+| `k <name>` | Yes | Create/enter Kali (humans only) |
+| `fx <name>` | Yes | Destroy with prompt (humans only) |
+
+**Claude Code can only use:** `fl`, `fe`, `fxq`
+
 ## When to Use Containers
 
 **USE containers for:**
@@ -19,45 +32,9 @@ Guide for AI assistants (Claude Code) to use fenix containers.
 - Most development tasks
 - Anything that works fine on host
 
-## Commands Reference
+## Usage Examples
 
-| Command | Interactive | Description |
-|---------|-------------|-------------|
-| `fl` | No | List containers |
-| `fe <name> <cmd>` | No | Execute command in container |
-| `fxq <name>` | No | Destroy container (no prompt) |
-| `f <name>` | Yes | Create/enter Ubuntu container |
-| `k <name>` | Yes | Create/enter Kali container |
-| `fx <name>` | Yes | Destroy container (prompts) |
-
-**Claude Code can only use non-interactive commands:** `fl`, `fe`, `fxq`
-
-## Creating a Container
-
-Containers are created on first use. To prepare a container for Claude Code:
-
-```bash
-# User runs interactively (creates container, installs packages):
-f myenv
-apt update && apt install -y python3 nodejs
-exit
-
-# Now Claude Code can use it:
-fe myenv python3 --version
-fe myenv node --version
-```
-
-Or create without entering:
-
-```bash
-# This creates but connection closes after setup
-f myenv
-# Container now exists, Claude Code can use fe
-```
-
-## Claude Code Usage Examples
-
-### List available containers
+### List containers
 ```bash
 fl
 ```
@@ -81,7 +58,7 @@ fe myenv apt install -y curl
 fe myenv curl https://example.com
 ```
 
-### Multi-command (use && or ;)
+### Multi-command
 ```bash
 fe myenv "cd /home/pi/Projects && ls -la"
 ```
@@ -89,6 +66,13 @@ fe myenv "cd /home/pi/Projects && ls -la"
 ### Destroy when done
 ```bash
 fxq myenv
+```
+
+### Error handling
+```bash
+# This fails cleanly if container doesn't exist:
+fe nonexistent echo hello
+# Error: container 'nonexistent' does not exist. Create with: f nonexistent
 ```
 
 ## Container Characteristics
@@ -122,7 +106,6 @@ fxq myenv
 For most tasks, just run on host:
 
 ```bash
-# This works fine without containers:
 python3 script.py
 npm install
 git status
