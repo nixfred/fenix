@@ -1,112 +1,167 @@
-# Fenix
+<p align="center"><img src="assets/readme-hero.svg" alt="Fenix routes shell commands from local and remote machines to ephemeral Ubuntu and Kali containers" width="100%"></p>
 
-Ephemeral Linux containers from any machine. Runs on box, accessible from anywhere.
+<h1 align="center">Fenix</h1>
 
-## Commands
+<p align="center"><strong>Ephemeral Linux containers from any shell.</strong><br>One Bash control plane for local work, remote execution, clean experiments, and disposable security labs.</p>
 
-```bash
-# Interactive (humans)
-f              # list containers (colored)
-f mybox        # create/enter Ubuntu container
-k pentest      # create/enter Kali container
-fssh mybox     # SSH into container
-fx mybox       # destroy container (prompts)
-finfo mybox    # show container info
+## Why Fenix exists
 
-# Non-interactive (scripts, Claude Code)
-fl             # list containers (colored)
-fe mybox pwd   # execute command in container
-fxq mybox      # destroy container (no prompt)
+Fenix turns Distrobox containers on one Linux host into short shell commands available on that host or over SSH from other machines. The operating system is disposable; the work under `/home/pi` remains shared and persistent.
+
+```mermaid
+flowchart LR
+    L[box<br/>local shell] --> D[Distrobox on box]
+    F[fnix<br/>remote shell] -->|SSH| D
+    M[mac<br/>remote shell] -->|SSH| D
+    D --> U[Ubuntu 24.04 containers]
+    D --> K[Kali rolling containers]
+    U --> H[Shared /home/pi]
+    K --> H
 ```
 
-| Command | Interactive | Description |
-|---------|-------------|-------------|
-| `f` | Yes | List containers |
-| `f <name>` | Yes | Create/enter Ubuntu 24.04 container |
-| `k <name>` | Yes | Create/enter Kali container |
-| `fssh <name>` | Yes | SSH into container |
-| `fx <name>` | Yes | Destroy container (confirms) |
-| `finfo <name>` | No | Show container info |
-| `fl` | No | List containers |
-| `fe <name> <cmd>` | No | Execute command in container |
-| `fxq <name>` | No | Destroy container (no confirm) |
+Use it when a task needs package isolation, a clean environment, reproducible experiments, or Kali tooling. Ordinary editing, Git, and host-safe commands do not need a container.
 
-Works from box (local), fnix (SSH), or mac (SSH).
+## Command surface
 
-**Tab completion** supported for all commands.
+| Command | Mode | Result |
+| --- | --- | --- |
+| `f` / `fl` | Human / automation | List containers with status colors |
+| `f <name>` | Interactive | Create or enter an Ubuntu 24.04 container |
+| `k <name>` | Interactive | Create or enter a Kali container |
+| `fe <name> <command…>` | Non-interactive | Execute a command in an existing container |
+| `fssh <name>` | Interactive | SSH directly into a container through its assigned port |
+| `finfo <name>` | Non-interactive | Show status, image, start date, network, and SSH port |
+| `fx <name>` | Interactive | Destroy a container after confirmation |
+| `fxq <name>` | Non-interactive | Destroy an existing container without confirmation |
 
-## Features
+```mermaid
+stateDiagram-v2
+    [*] --> Missing
+    Missing --> Running: f name / k name
+    Running --> Running: enter / fe / fssh
+    Running --> Inspected: finfo
+    Inspected --> Running
+    Running --> Missing: fx / fxq
+```
 
-- **Auto SSH Setup**: New containers get sshd on unique ports (2201-2299)
-- Color-coded container status (green=running, yellow=stopped)
-- Tab completion for container names
-- 5-second SSH timeout (no hanging if box offline)
-- Container info display (status, image, start time, SSH port)
+Tab completion discovers existing container names for every command that accepts one.
 
-## Setup
+## Execution path
 
-### On box (Linux host)
+The sourced script compares the current hostname with `FENIX_HOST`. On the designated host it invokes Distrobox directly; everywhere else it forwards the same operation over SSH. Read-only/parsing operations omit TTY allocation, while interactive entry requests one.
 
-Requirements:
-- [distrobox](https://github.com/89luca89/distrobox) at `/home/pi/.local/bin/distrobox`
-- Docker or Podman
+```mermaid
+flowchart TD
+    C[Fenix command] --> Q{hostname = FENIX_HOST?}
+    Q -->|yes| L[Run Distrobox locally]
+    Q -->|no| S[SSH to FENIX_HOST]
+    S --> T{Interactive?}
+    T -->|yes| PTY[Allocate TTY]
+    T -->|no| PIPE[Plain SSH output]
+    L --> R[Container runtime]
+    PTY --> R
+    PIPE --> R
+```
+
+Remote connections fail fast after five seconds. `FENIX_HOST` is configurable and defaults to `box`; the Distrobox path and timeout are internal constants in the current script.
+
+## New-container bootstrap
+
+On first creation, Fenix pulls the selected image, mounts a no-password marker, initializes the Distrobox, installs OpenSSH, selects the first free port from `2201–2299`, copies host SSH keys, and starts `sshd`.
+
+```mermaid
+flowchart LR
+    N[Unknown name] --> I[Create container]
+    I --> E[First enter / initialize]
+    E --> O[Install OpenSSH]
+    O --> P[Choose port 2201–2299]
+    P --> K[Copy host keys]
+    K --> S[Start sshd]
+    S --> R[Ready for fssh]
+```
+
+### Trust and isolation boundary
+
+- `/home/pi` is shared with containers, so files there are **not isolated** from container processes.
+- Containers use host networking; services and ports share the host's network namespace.
+- Container SSH daemons reuse the host's RSA, ECDSA, and ED25519 host keys. This avoids changing fingerprints but means they intentionally share one SSH identity.
+- Bootstrap installs packages and copies private host keys with elevated privileges. Review `fenix.bashrc` before sourcing it on a new host.
+- Destruction removes the container OS. Work in the shared home survives; files elsewhere in the container do not.
+
+## Install
+
+Requirements on the Linux host:
+
+- Bash;
+- Docker or Podman;
+- Distrobox at `/home/pi/.local/bin/distrobox`;
+- passwordless SSH aliases for remote clients, if used.
 
 ```bash
-# Clone repo
-git clone <repo> ~/Projects/f
-
-# Create config dir and copy
+git clone https://github.com/nixfred/fenix.git ~/Projects/fenix
 mkdir -p ~/.config/fenix
-cp ~/Projects/f/fenix.bashrc ~/.config/fenix/
-
-# Source in .bashrc
-echo 'source ~/.config/fenix/fenix.bashrc' >> ~/.bashrc
+cp ~/Projects/fenix/fenix.bashrc ~/.config/fenix/
+printf '\nsource ~/.config/fenix/fenix.bashrc\n' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-### On fnix/mac (remote machines)
+On remote machines, copy `fenix.bashrc` into the same config path, source it, and set `FENIX_HOST` if the container host is not named `box`:
 
 ```bash
-# Create config dir
-mkdir -p ~/.config/fenix
-
-# Source in .bashrc
-echo 'source ~/.config/fenix/fenix.bashrc 2>/dev/null' >> ~/.bashrc
+export FENIX_HOST=my-container-host
+source ~/.config/fenix/fenix.bashrc
 ```
 
-### Sync (Automatic)
+## Typical workflows
 
-A post-commit hook syncs `fenix.bashrc` to fnix and mac on every commit.
-
-### Manual Sync
+Interactive Ubuntu environment:
 
 ```bash
-# From box (if needed)
-scp ~/.config/fenix/fenix.bashrc fnix:~/.config/fenix/
-scp ~/.config/fenix/fenix.bashrc mac:~/.config/fenix/
+f dev
+# work inside the container
+exit
+finfo dev
 ```
 
-## How it works
+Non-interactive automation against an existing container:
 
-- Commands execute on box (locally or via SSH from remote machines)
-- `f mybox` creates Ubuntu 24.04 container named `mybox`
-- `k pentest` creates Kali container named `pentest`
-- First run pulls image (~1-3 min), subsequent runs enter instantly
-- `/home/pi` shared between host and containers
-- No password prompts on first entry
-- SSH server auto-installed on unique port (2201-2299)
-- `finfo mybox` shows container details including SSH port
-- `fx mybox` or `fxq mybox` destroys container
+```bash
+fe dev cat /etc/os-release
+fe dev "cd /home/pi/Projects && make test"
+```
 
-## Environment Variables
+Disposable Kali environment:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FENIX_HOST` | `box` | Linux host running distrobox |
-| `_FENIX_TIMEOUT` | `5` | SSH connection timeout (seconds) |
+```bash
+k lab
+# authorized security work only
+exit
+fx lab
+```
 
-## Images
+Automation should use `fl`, `fe`, `finfo`, and `fxq`; creation and confirmed destruction are interactive. See [HOWTO.md](HOWTO.md) for the assistant-oriented workflow.
 
-| Command | Image |
-|---------|-------|
-| `f` | `ubuntu:24.04` |
-| `k` | `docker.io/kalilinux/kali-last-release` |
+## Repository map
+
+```text
+.
+├── fenix.bashrc             # Sourced command implementation
+├── HOWTO.md                 # Non-interactive / assistant usage
+├── CLAUDE.md                # Architecture and maintainer context
+├── assets/readme-hero.svg   # README title artwork
+└── README.md
+```
+
+## Verification
+
+The script has no build step. Check syntax before sourcing changes:
+
+```bash
+bash -n fenix.bashrc
+```
+
+For behavioral testing, use a disposable host or container setup with Distrobox and Docker available; the functions intentionally perform real container, SSH, package-install, and deletion operations.
+
+---
+
+<p align="center"><strong>Persistent work. Disposable systems. One-letter distance.</strong></p>
